@@ -11,9 +11,9 @@ Because it renders via Chrome, it supports a wide range of CSS and HTML tags tha
 
 **1. Install ChromePDF via pip.**
 
-The 1.1 branch can be included via the following requirement:
+The 1.1 branch can be installed via PyPI:
 ```
-https://github.com/imsweb/django-chromepdf/archive/1.1.zip
+pip install django-chromepdf~=1.1.0
 ```
 
 **2. Install Selenium,** preferably version 3 or higher. (Installing ChromePDF via pip should take care of this step)
