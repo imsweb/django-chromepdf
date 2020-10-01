@@ -39,16 +39,6 @@ You may also specify a chromedriver path manually. This is recommended if you di
 * OR, pass a `chromedriver_path` argument to `generate_pdf()` containing the path.
 * OR, if both of the above are not set, and you've disabled downloads, and if your chromedriver is in your PATH environment variable, then Selenium should be able to find it automatically.
 
-## Advantages
-* Smooth rendering using Google Chrome. No jagged corners for table cells.
-* Over PhantomJS
-  * Scaling is identical on Windows and Linux
-  * No Javascript required.
-  * No need to write/read files from the filesystem.
-* Over wkhtmltopdf
-  * Can add page numbers to headers/footers without using Javascript.
-  * No need to write/read files from the filesystem (including header and footer templates).
-
 ## Example: `generate_pdf()`
 Note: `generate_pdf()` cannot include external files including CSS. If you use this function, then you must include all your CSS within `<style>` tags or as inline styles.
 
