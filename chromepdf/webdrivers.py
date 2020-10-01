@@ -76,7 +76,8 @@ def download_chromedriver_version(version, force=False):
 
     # This url returns a 4-part version string for which a chromedriver exists.
     url = f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{version_first3parts}'
-    contents = urllib_request.urlopen(url).read()
+    with urllib_request.urlopen(url) as f:
+        contents = f.read()
     latest_version_str = contents.decode('utf8')  # EG 85.0.4183.87
 
     # These are the filenames of the chromedriver zip files for each OS.
@@ -85,7 +86,8 @@ def download_chromedriver_version(version, force=False):
 
     # Download the zip file
     url2 = f'https://chromedriver.storage.googleapis.com/{latest_version_str}/{filename}'
-    zip_bytes = urllib_request.urlopen(url2).read()
+    with urllib_request.urlopen(url2) as f:
+        zip_bytes = f.read()
 
     # open the zip file, find the chromedriver, and save it to the specified path.
     zf = zipfile.ZipFile(io.BytesIO(zip_bytes), "r")
