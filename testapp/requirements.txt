@@ -1,5 +1,5 @@
 # These requirements are for running unit tests.
-selenium==3.141.0
+selenium<4
 PyPDF2==1.25.1
 pdfminer.six==20170720
 Django==2.2.12

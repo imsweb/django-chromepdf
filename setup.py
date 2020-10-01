@@ -28,6 +28,6 @@ setup(
         'Topic :: Utilities',
     ],
     install_requires=[
-        'selenium~=3.141.0'
+        'selenium<4'
     ],
 )
