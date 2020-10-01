@@ -1,8 +1,17 @@
+import os
+import re
+
 from setuptools import find_packages, setup
 
+
+def get_version():
+    with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py')) as fp:
+        return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)
+
+
 setup(
-    name='chromepdf',
-    version='1.1.0',  # Make sure to update the string in chromepdf.__init__.__version__ too
+    name='django-chromepdf',
+    version=get_version(),  # Make sure to update the string in chromepdf.__init__.__version__ too
     description='ChromePDF is a small Django application that uses Selenium and Google Chrome to convert HTML into a PDF.',
     author='Andrew Kukwa',
     author_email='kukwaa@imsweb.com',
