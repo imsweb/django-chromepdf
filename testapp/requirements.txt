@@ -1,0 +1,9 @@
+# These requirements are for running unit tests.
+selenium==3.141.0
+PyPDF2==1.25.1
+pdfminer.six==20170720
+Django==2.2.12
+
+# For code cleanup
+autopep8~=1.4.4 # License: MIT
+isort~=4.3.21 # License: MIT

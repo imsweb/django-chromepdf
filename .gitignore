@@ -1,0 +1,15 @@
+*.pyc
+
+.project
+.pydevproject
+.settings
+
+docs/*/
+chromepdf/chromedrivers/chromedriver*
+
+*.db
+*.log
+*.bak 
+
+/uploads
+/tmp
