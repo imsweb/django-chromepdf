@@ -44,7 +44,7 @@ class ChromePdfMaker:
             dataurl = "data:text/html;charset=utf-8," + urllib.parse.quote('')
             driver.get(dataurl)
 
-            # append our html. theoretically no length limit. escapes all except ascii letters+numbers.
+            # append our html. theoretically no length limit.
             html = html.replace('`', r'\`')  # escape the backtick used to indicate a multiline string in javascript
             # we do NOT need to escape any other chars (quotes, etc), including unicode
             driver.execute_script("document.write(`{}`)".format(html))

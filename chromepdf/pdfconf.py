@@ -159,7 +159,7 @@ def clean_pdf_kwargs(**options):
 
 #     preferCSSPageSize = options.get('preferCSSPageSize','')
 
-    # the actual dict that we will pass to Chrome (convenience kwargs like margin and pageFormat are removed)
+    # the actual dict that we will pass to Chrome (convenience kwargs like margin and paperFormat are removed)
     parameters = dict(
         scale=scale,
         landscape=landscape,

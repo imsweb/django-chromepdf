@@ -28,14 +28,25 @@ class ChromePdfKwargsTests(TestCase):
         self.assertEqual(96, convert_to_unit('96px', 'px'))
         self.assertEqual(1, convert_to_unit('96px', 'in'))
 
-        # zero conversion (ensure no division by zero issues)
-        self.assertEqual(0, convert_to_inches('0mm'))
-        self.assertEqual(0, convert_to_inches('0in'))
-        self.assertEqual(0, convert_to_unit('0mm', 'cm'))
-        self.assertEqual(0, convert_to_unit('0in', 'cm'))
-        self.assertEqual(0, convert_to_unit(0, 'cm'))
-
         # Allow decimal, int and float
         self.assertEqual(1.75, convert_to_inches(Decimal('1.75')))
         self.assertEqual(1.75, convert_to_inches(1.75))
         self.assertEqual(2, convert_to_inches(2))
+
+        # <1 conversion
+        self.assertEqual(0.75, convert_to_inches('0.75in'))  # leading zero
+        self.assertEqual(0.75, convert_to_inches('.75in'))  # no leading zero
+        self.assertEqual(0.75, convert_to_inches(Decimal('0.75')))
+        self.assertEqual(0.75, convert_to_inches(Decimal('.75')))
+        self.assertEqual(0.75, convert_to_inches(.75))
+
+        # zero conversion (ensure no division by zero issues)
+        self.assertEqual(0, convert_to_inches('0mm'))
+        self.assertEqual(0, convert_to_inches('0in'))
+        self.assertEqual(0, convert_to_inches(Decimal('0.0')))
+        self.assertEqual(0, convert_to_inches(Decimal('0')))
+        self.assertEqual(0, convert_to_inches(0))
+
+        self.assertEqual(0, convert_to_unit('0mm', 'cm'))
+        self.assertEqual(0, convert_to_unit('0in', 'cm'))
+        self.assertEqual(0, convert_to_unit(0, 'cm'))
