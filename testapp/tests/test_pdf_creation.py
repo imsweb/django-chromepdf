@@ -80,6 +80,15 @@ class GeneratePdfTests(TestCase):
         self.assertEqual(1, extracted_text.count(html))
 
     @override_settings(CHROMEPDF={})
+    def test_generate_pdf_url_bad_file_uri(self):
+        """Test outputting a PDF using the generate_pdf_url() shortcut function, with a bad file URI."""
+
+        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
+
+        with self.assertRaises(ValueError):
+            _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
+
+    @override_settings(CHROMEPDF={})
     def test_generate_pdf_maker(self):
         """Test outputting a PDF using a ChromePdfMaker object."""
 
