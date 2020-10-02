@@ -134,9 +134,15 @@ class ChromePdfKwargsTests(TestCase):
             _kwargs = clean_pdf_kwargs(paperHeight=' 8in')
         with self.assertRaises(ValueError):
             _kwargs = clean_pdf_kwargs(paperHeight='8in ')
-        # typeerror
+        # type error (these cannot be None)
         with self.assertRaises(TypeError):
             _kwargs = clean_pdf_kwargs(paperHeight=None)
+        with self.assertRaises(TypeError):
+            _kwargs = clean_pdf_kwargs(paperWidth=None)
+
+        # raise ValueError if paperFormat is not recognized
+        with self.assertRaises(ValueError):
+            kwargs = clean_pdf_kwargs(paperFormat='A9')
 
         # set a paperFormat (lowercase)
         kwargs = clean_pdf_kwargs(paperFormat='a4')
