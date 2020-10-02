@@ -47,7 +47,7 @@ def createTempFile(file_bytes):
     return temp
 
 
-class GeneratePdfTests(TestCase):
+class GeneratePdfSimpleTests(TestCase):
 
     @override_settings(CHROMEPDF={})
     def test_generate_pdf(self):
@@ -59,6 +59,19 @@ class GeneratePdfTests(TestCase):
         pdfbytes = generate_pdf(html)
         self.assertIsInstance(pdfbytes, bytes)
         self.assertEqual(1, extractText(pdfbytes).count(html))
+
+    @override_settings(CHROMEPDF={})
+    def test_generate_pdf_maker(self):
+        """Test outputting a PDF using a ChromePdfMaker object."""
+
+        html = 'One Word'
+        pdfmaker = ChromePdfMaker()
+        pdfbytes = pdfmaker.generate_pdf(html, clean_pdf_kwargs())
+        self.assertIsInstance(pdfbytes, bytes)
+        self.assertEqual(1, extractText(pdfbytes).count(html))
+
+
+class GeneratePdfUrlSimpleTests(TestCase):
 
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_url(self):
@@ -88,18 +101,11 @@ class GeneratePdfTests(TestCase):
         with self.assertRaises(ValueError):
             _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
 
-    @override_settings(CHROMEPDF={})
-    def test_generate_pdf_maker(self):
-        """Test outputting a PDF using a ChromePdfMaker object."""
 
-        html = 'One Word'
-        pdfmaker = ChromePdfMaker()
-        pdfbytes = pdfmaker.generate_pdf(html, clean_pdf_kwargs())
-        self.assertIsInstance(pdfbytes, bytes)
-        self.assertEqual(1, extractText(pdfbytes).count(html))
+class GeneratePdfEncodingTests(TestCase):
 
     @override_settings(CHROMEPDF={})
-    def test_generate_pdf_special_chars(self):
+    def test_generate_pdf_and_url_special_chars(self):
         """
         Test outputting a PDF with special characters.
 
@@ -126,6 +132,40 @@ class GeneratePdfTests(TestCase):
         finally:
             os.remove(tempfile.name)
         self.assertEqual(1, extracted_text.count(html))
+
+
+class GeneratePdfStressTests(TestCase):
+
+    def test_generate_pdf_huge_pdfs(self):
+        """Test outputting PDFs when the HTML is 1 MB."""
+
+        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+
+        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
+
+        # generate_pdf
+        pdfbytes = generate_pdf(html)
+        self.assertIsInstance(pdfbytes, bytes)
+        extracted_text = extractText(pdfbytes).strip()
+        self.assertEqual(1000 * 100, extracted_text.count('123456789'))
+
+    def test_generate_pdf_url_huge_pdfs(self):
+
+        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
+
+        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
+
+        # generate_pdf_url
+        try:
+            with tempfile.NamedTemporaryFile(delete=False) as temp:
+                temp.write(html.encode('utf8'))  # 10* 100*1000 = 1 MB
+
+                tempfile_uri = pathlib.Path(temp.name).as_uri()
+                pdfbytes = generate_pdf_url(tempfile_uri)
+                extracted_text = extractText(pdfbytes).strip()
+                self.assertEqual(1000 * 100, extracted_text.count('123456789'))
+        finally:
+            os.remove(temp.name)
 
 
 class PdfPageSizeTests(TestCase):
