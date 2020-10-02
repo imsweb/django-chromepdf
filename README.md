@@ -1,6 +1,6 @@
 ## ChromePDF Overview
 
-ChromePDF is a small library that uses Selenium and Google Chrome to convert HTML into a PDF. 
+ChromePDF is a small Python 3 library that uses Selenium and Google Chrome to convert HTML into a PDF. It takes advantage of Django settings for configuration, but Django is not a required dependency.
 
 It provides a function that can accept html, plus a dict of page parameters, and other settings, and return the bytes containing a PDF:
 * `pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)`
