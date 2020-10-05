@@ -2,7 +2,8 @@
 
 ChromePDF is a small Python 3 library that uses [Selenium](https://pypi.org/project/selenium/) and Google Chrome to convert HTML into a PDF. 
 
-It provides a function that can accept html, plus a dict of page parameters, and other settings, and return the bytes containing a PDF:
+It provides a function that accepts an html string, plus a dict of page parameters, and other settings, and returns the bytes containing a PDF:
+
 `pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)`
 
 Because it renders via Chrome, it supports a wide range of CSS and HTML tags that should display the same as if you used Chrome to view the HTML itself.
@@ -129,5 +130,5 @@ Margins:
 
 Page Ranges:
 *  **pageRanges**: String indicating page ranges to use. Example: `'1-5, 8, 11-13'`
-*  **ignoreInvalidPageRanges**: If `True`, will silently ignore invalid `pageRanges` values. Default `False`.
+*  **ignoreInvalidPageRanges**: If `True`, will silently ignore invalid "pageRanges" values. Default `False`.
 
