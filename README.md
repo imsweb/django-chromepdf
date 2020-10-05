@@ -35,7 +35,7 @@ A chromedriver executable is necessary to interface between Selenium and Chrome.
 
 You may disable these automatic downloads in the following way:
 * In your Django settings, set `CHROMEPDF['CHROMEDRIVER_DOWNLOADS']` to False
-* OR, pass a `chromedriver_downloads` argument to `generate_pdf()`
+* OR, pass a `chromedriver_downloads=False` argument to `generate_pdf()`
 
 You may also specify a chromedriver path manually. This is recommended if you disable downloads:
 * In your Django settings, set `CHROMEPDF['CHROMEDRIVER_PATH']` to the full path of the executable (E.G., `r"C:\Users\myuser\...\chromedriver_win32\chromedriver.exe"`)
