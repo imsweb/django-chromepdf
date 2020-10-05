@@ -1,10 +1,28 @@
 from decimal import Decimal
 from unittest.case import TestCase
 
-from chromepdf.sizes import convert_to_inches, convert_to_unit
+from chromepdf.sizes import (PAPER_FORMATS, UNIT_STR_LENGTH, UNITS_PER_INCH,
+                             convert_to_inches, convert_to_unit)
 
 
 class ChromePdfKwargsTests(TestCase):
+
+    def test_paperformat_sizes(self):
+        """Make sure all paperFormat values are lowercased, and given in inches as ints/floats."""
+
+        for k, v in PAPER_FORMATS.items():
+            self.assertEqual(k, k.lower())
+            self.assertIsInstance(v.get('width'), (int, float))
+            self.assertIsInstance(v.get('height'), (int, float))
+
+    def test_unit_types(self):
+        """Make sure all unit types are lowercased, and have names of length 2, and types of int/float."""
+
+        for k, v in UNITS_PER_INCH.items():
+            self.assertIsInstance(k, str)
+            self.assertEqual(k, k.lower())
+            self.assertEqual(UNIT_STR_LENGTH, len(k))
+            self.assertIsInstance(v, (int, float))
 
     def test_unit_conversions(self):
 
