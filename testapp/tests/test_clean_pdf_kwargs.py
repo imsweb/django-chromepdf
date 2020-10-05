@@ -54,16 +54,19 @@ class ChromePdfKwargsTests(TestCase):
         """For each of the four boolean parameters, test setting them to True, False, and truthy/falsey values."""
 
         boolean_kwargs = ('landscape', 'displayHeaderFooter', 'printBackground', 'ignoreInvalidPageRanges')
+        truthy_values = (True, 1, 'nonemptystring')
+        falsey_values = (False, 0, '', None)
         for param in boolean_kwargs:
-            with self.subTest(param=param):
-                kwargs = clean_pdf_kwargs(**{param: True})
-                self.assertEqual(kwargs[param], True)
-                kwargs = clean_pdf_kwargs(**{param: False})
-                self.assertEqual(kwargs[param], False)
-                kwargs = clean_pdf_kwargs(**{param: 1})
-                self.assertEqual(kwargs[param], True)
-                kwargs = clean_pdf_kwargs(**{param: 0})
-                self.assertEqual(kwargs[param], False)
+
+            for testval in truthy_values:
+                with self.subTest(param=param, testval=testval):
+                    kwargs = clean_pdf_kwargs(**{param: testval})
+                    self.assertEqual(kwargs[param], True)
+
+            for testval in falsey_values:
+                with self.subTest(param=param, testval=testval):
+                    kwargs = clean_pdf_kwargs(**{param: testval})
+                    self.assertEqual(kwargs[param], False)
 
     def test_clean_pdf_kwargs_override_scale(self):
         kwargs = clean_pdf_kwargs(scale=1)
@@ -217,12 +220,17 @@ class ChromePdfKwargsTests(TestCase):
 
     def test_clean_pdf_kwargs_pageranges(self):
 
+        # test int type
+        kwargs = clean_pdf_kwargs(pageRanges=1)
+        self.assertEqual(kwargs['pageRanges'], '1')
+
+        # test valid string types
         kwargs = clean_pdf_kwargs(pageRanges='1-5, 8, 11-13')
         self.assertEqual(kwargs['pageRanges'], '1-5, 8, 11-13')
 
-        # convert to string (API expects string)
-        kwargs = clean_pdf_kwargs(pageRanges=1)
-        self.assertEqual(kwargs['pageRanges'], '1')
+        # as of 1.1, we do NOT do any validation client-side. if we do, this would be a breaking change.
+        kwargs = clean_pdf_kwargs(pageRanges='SDFGSDFGSDFG')
+        self.assertEqual(kwargs['pageRanges'], 'SDFGSDFGSDFG')
 
     @override_settings(CHROMEPDF={'PDF_KWARGS': {'marginTop': '8cm'}})
     def test_clean_pdf_kwargs_settings(self):
