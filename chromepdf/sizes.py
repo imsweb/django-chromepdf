@@ -28,7 +28,7 @@ PAPER_FORMATS = {
 
 def convert_to_inches(size):
     """
-    Take a case-insensitive string consisting of a CSS length and return a float of that value in inches.
+    Take a case-insensitive string consisting of a CSS length and return a float or int of that value in inches.
     If an int or float is passed in, then it is assumed to be an int and is returned as-is.
     If None is passed, return None (presumed that we're trying to "disable" the setting).
     """
@@ -36,7 +36,9 @@ def convert_to_inches(size):
     if size is None:
         return None
     elif isinstance(size, (int, float, Decimal)):  # inches
-        return size
+        if isinstance(size, Decimal):
+            return float(size)  # we must return the value in a json-serializable format, which Decimal is not.
+        return size  # int and float are json-serializable
     elif isinstance(size, str) and len(size) > UNIT_STR_LENGTH:
         format_num = size[:-UNIT_STR_LENGTH]  # EG "2.5in" => "2.5"
         format_str = size[-UNIT_STR_LENGTH:].lower()  # EG "2.5in" => "in"

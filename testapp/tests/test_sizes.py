@@ -24,6 +24,29 @@ class ChromePdfKwargsTests(TestCase):
             self.assertEqual(UNIT_STR_LENGTH, len(k))
             self.assertIsInstance(v, (int, float))
 
+    def test_convert_return_types(self):
+        """Return types must always be floats or ints (since they are JSON-serializable). Otherwise, Selenium will fail when creating JSON."""
+
+        JSON_NUMERIC_TYPES = (int, float)
+
+        self.assertIsInstance(convert_to_inches(1), JSON_NUMERIC_TYPES)
+        self.assertIsInstance(convert_to_inches('1in'), JSON_NUMERIC_TYPES)
+        self.assertIsInstance(convert_to_inches('.75in'), JSON_NUMERIC_TYPES)
+        # Important! Decimal is NOT json-serializable. It must be converted to int/float
+        self.assertIsInstance(convert_to_inches(Decimal('1.75')), JSON_NUMERIC_TYPES)
+
+        self.assertIsInstance(convert_to_unit(1, 'in'), JSON_NUMERIC_TYPES)
+        self.assertIsInstance(convert_to_unit('1in', 'in'), JSON_NUMERIC_TYPES)
+        self.assertIsInstance(convert_to_unit('.75in', 'in'), JSON_NUMERIC_TYPES)
+        # Important! Decimal is NOT json-serializable. It must be converted to int/float
+        self.assertIsInstance(convert_to_unit(Decimal('1.75'), 'in'), JSON_NUMERIC_TYPES)
+
+        # string lengths MUST provide a unit type.
+        with self.assertRaises(ValueError):
+            convert_to_inches('1')
+        with self.assertRaises(ValueError):
+            convert_to_unit('1', 'in')
+
     def test_unit_conversions(self):
 
         self.assertEqual(1, convert_to_inches('25.4mm'))
