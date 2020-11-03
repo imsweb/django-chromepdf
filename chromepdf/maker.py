@@ -1,6 +1,7 @@
 import base64
 import urllib
 import warnings
+from urllib.parse import urlparse
 
 from chromepdf.conf import parse_settings
 from chromepdf.pdfconf import clean_pdf_kwargs
@@ -43,7 +44,7 @@ class ChromePdfMaker:
             dataurl = "data:text/html;charset=utf-8," + urllib.parse.quote('')
             driver.get(dataurl)
 
-            # append our html. theoretically no length limit. escapes all except ascii letters+numbers.
+            # append our html. theoretically no length limit.
             html = html.replace('`', r'\`')  # escape the backtick used to indicate a multiline string in javascript
             # we do NOT need to escape any other chars (quotes, etc), including unicode
             driver.execute_script("document.write(`{}`)".format(html))
@@ -57,6 +58,13 @@ class ChromePdfMaker:
         """Generate a PDF file from a url (such as a file:/// url) and return the PDF as a bytes object."""
 
         warnings.warn("ChromePdfMaker.generate_pdf_url() is deprecated, use generate_pdf() instead.", DeprecationWarning)
+
+        # throw an early exception if we receive a string that Chrome would return a 400 error (Bad Request) if given.
+        parseresult = urlparse(url)
+        if not parseresult.scheme:
+            raise ValueError('generate_pdf_url() requires a valid URI, beginning with file:/// or https:// or similar. '
+                             'You can use: import pathlib; pathlib.Path(absolute_path).as_uri() to '
+                             'convert an absolute path into such a file URI.')
 
         pdf_kwargs = self._clean_pdf_kwargs(pdf_kwargs)
 
