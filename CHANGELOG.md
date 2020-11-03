@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.1.1 - Unreleased
+## [1.1.1](https://github.com/imsweb/django-chromepdf/tree/1.1.1) - 2020-11-03
 
 ### Fixed
 
