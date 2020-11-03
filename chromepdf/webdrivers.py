@@ -33,7 +33,7 @@ def get_chrome_version(path):
             if l[0].isdigit():
                 version = l.split()[0]
                 return tuple(int(i) for i in version.split('.'))
-    else:  # linux
+    else:  # linux, mac can both just use "--version"
         proc = subprocess.run([path, '--version'], stdout=PIPE, stderr=PIPE)
         version_stdout = proc.stdout.decode('utf8').strip()  # returns, eg, "Google Chrome 85.0.4183.121"
         version = [i for i in version_stdout.split() if i[0].isdigit()][0]
@@ -48,8 +48,10 @@ def _get_chromedriver_download_path(major_version):
     is_windows = (platform.system() == 'Windows')
     chromedrivers_dir = os.path.join(os.path.dirname(__file__), 'chromedrivers')
     chromedriver_path = os.path.join(chromedrivers_dir, f'chromedriver_{major_version}')
-    if is_windows:
+    if is_windows:  # windows requires an extension or it won't run.
         chromedriver_path += '.exe'
+    else:  # linux, mac = no extension
+        pass
     return chromedriver_path
 
 
@@ -82,7 +84,9 @@ def download_chromedriver_version(version, force=False):
 
     # These are the filenames of the chromedriver zip files for each OS.
     is_windows = (platform.system() == 'Windows')
-    filename = 'chromedriver_win32.zip' if is_windows else 'chromedriver_linux64.zip'
+    is_mac = (platform.system() == 'Darwin')
+    os_plus_numbits = 'win32' if is_windows else 'mac64' if is_mac else 'linux64'
+    filename = f'chromedriver_{os_plus_numbits}.zip'
 
     # Download the zip file
     url2 = f'https://chromedriver.storage.googleapis.com/{latest_version_str}/{filename}'
