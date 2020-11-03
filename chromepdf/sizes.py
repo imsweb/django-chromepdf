@@ -2,7 +2,7 @@ import string
 from decimal import Decimal
 
 # For more information, see: https://www.w3.org/TR/CSS2/syndata.html#length-units
-# NOTE: All keys should be two chars long.
+# NOTE: All keys should be two chars long. All values should be integers or floats.
 UNITS_PER_INCH = {
     'px': 96,  # these are "Reference Pixels" (defined by CSS standard as 96 DPI (.75 px/pt, and 72 pt/in = 96).
     'cm': 2.54,
@@ -11,9 +11,9 @@ UNITS_PER_INCH = {
 }
 UNIT_STR_LENGTH = 2  # our parser expects all unit types to be two characters long ("in", "cm", etc)
 
-# All values MUST be provided as integers and given in inches.
+# All values MUST be provided as integers or floats, and given in inches.
 # These values will be passed to Page.PrintToPDF, which only accepts inches.
-# same ones as supported  by PhantomJS, + ledger
+# These sizes are the same ones as supported  by PhantomJS, plus ledger
 # A good reference for these sizes (used for printers): https://doc.qt.io/archives/qt-5.10/qpagesize.html
 PAPER_FORMATS = {
     'ledger': {'width': 17, 'height': 11},

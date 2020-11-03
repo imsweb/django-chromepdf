@@ -127,6 +127,13 @@ def get_chrome_webdriver(chrome_path, chromedriver_path):
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2907#c3
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
+    # In Selenium 4, we must tell the driver to ignore any os.environ['http_proxy'/'https_proxy'] values.
+    # Calling this function preserves Selenium 3 behavior, which did not check them at all.
+    # This function does not exist in Selenium 3, so we must check if it exists to preserve Selenium 3 compatibility.
+    # https://github.com/SeleniumHQ/selenium/issues/8768
+    if hasattr(options, 'ignore_local_proxy_environment_variables') and callable(options.ignore_local_proxy_environment_variables):
+        options.ignore_local_proxy_environment_variables()
+
     if chrome_path is not None:
         options.binary_location = chrome_path  # Selenium API
 
