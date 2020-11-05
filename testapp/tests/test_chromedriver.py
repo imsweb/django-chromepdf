@@ -1,4 +1,5 @@
 import os
+import platform
 import time
 from unittest.case import TestCase
 
@@ -6,11 +7,20 @@ from django.test.utils import override_settings
 
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (_get_chromedriver_download_path,
+                                  _get_chromedriver_environment_path,
                                   download_chromedriver_version,
                                   get_chrome_version)
 
 
 class ChromeDriverDownloadTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
+        if not _get_chromedriver_environment_path():
+            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
 
     @override_settings(CHROMEPDF={})
     def test_chromedriver_downloads(self):
@@ -19,7 +29,12 @@ class ChromeDriverDownloadTests(TestCase):
         Test the file times of the chromedriver file to see if it's been updated or not.
         """
 
-        chrome_path = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+        is_windows = (platform.system() == 'Windows')
+        if is_windows:
+            chrome_path = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+        else:  # macos
+            chrome_path = r"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
         version = get_chrome_version(chrome_path)
 
         driver_path = _get_chromedriver_download_path(version[0])

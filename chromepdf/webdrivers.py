@@ -2,6 +2,7 @@ import io
 import json
 import os
 import platform
+import shutil
 import subprocess
 import zipfile
 from contextlib import contextmanager
@@ -40,8 +41,19 @@ def get_chrome_version(path):
         return tuple(int(i) for i in version.split('.'))
 
 
+def _get_chromedriver_environment_path():
+    """
+    Return full path of chromedriver on PATH, if it exists. Otherwise, return None.
+    This can be used to determine if Selenium can find the chromedriver without having to specify its location.
+    """
+
+    is_windows = (platform.system() == 'Windows')
+    filename = 'chromedriver.exe' if is_windows else 'chromedriver'
+    return shutil.which(filename)
+
+
 def _get_chromedriver_download_path(major_version):
-    """Return a path where a chromedriver file is/should be located."""
+    """Return a path to put/find a chromedriver file, if ChromePDF should/did download it."""
 
     assert isinstance(major_version, int)
 

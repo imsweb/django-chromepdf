@@ -3,6 +3,8 @@ import pathlib
 import tempfile
 from unittest.case import TestCase
 
+from chromepdf.webdrivers import _get_chromedriver_environment_path
+
 
 def createTempFile(file_bytes):
     if isinstance(file_bytes, str):
@@ -19,6 +21,14 @@ class TestWithoutDjangoTests(TestCase):
 
     py -3 -m unittest testapp.tests.test_without_django
     """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
+        if not _get_chromedriver_environment_path():
+            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
 
     def test_without_django(self):
         """
