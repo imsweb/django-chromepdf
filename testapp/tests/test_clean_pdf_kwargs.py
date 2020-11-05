@@ -27,6 +27,19 @@ class ChromePdfKwargsSettingsCopyTests(TestCase):
         # make sure parse_settings() did not alter the django pdf_kwargs setting
         self.assertEqual(settings_dict, deepcopy(get_chromepdf_settings_dict()['PDF_KWARGS']))
 
+    def test_clean_pdf_kwargs_options_not_edited(self):
+        """clean_pdf_kwargs() should NEVER result in updates to an options dict passed in."""
+
+        # first popped parameter (since not part of Chrome's API)
+        options = {'margin': '11mm'}
+        _kwargs = clean_pdf_kwargs(**options)
+        self.assertEqual(1, len(options))
+
+        # second popped parameter (since not part of Chrome's API)
+        options = {'paperFormat': 'letter'}
+        _kwargs = clean_pdf_kwargs(**options)
+        self.assertEqual(1, len(options))
+
 
 class ChromePdfKwargsTests(TestCase):
 
