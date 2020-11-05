@@ -1,8 +1,10 @@
-## ChromePDF Overview
+# ChromePDF
 
-ChromePDF is a small Python 3 library that uses [Selenium](https://pypi.org/project/selenium/) and Google Chrome to convert HTML into a PDF. 
+## Overview
 
-It provides a function that accepts an html string, plus a dict of page parameters, and other settings, and returns the bytes containing a PDF:
+ChromePDF is a small Python 3 library that uses [Selenium](https://pypi.org/project/selenium/) and Google Chrome to convert HTML into a PDF. This is accomplished by using Chrome's `Page.printToPDF` DevTools command.
+
+ChromePDF provides a function that accepts an html string, plus a dict of page parameters, and other settings, and returns the bytes containing a PDF:
 
 `pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)`
 
