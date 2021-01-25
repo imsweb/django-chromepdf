@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 def get_version():
     with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py')) as fp:
-        return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)
+        return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)  # @UndefinedVariable
 
 
 setup(

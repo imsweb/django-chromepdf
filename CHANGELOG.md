@@ -2,16 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.2.0 - Unreleased, Subject to Change
+## 1.3.0 - Unreleased, Subject to Change
 
 ### Changed
 
 - Selenium 4 is now preferred (dependency changed from `selenium<4` to `selenium<4,>=3`)
 
+## 1.2.0 - Unreleased, Subject to Change
+
+
 ### Added
 
+- Added a `CHROME_ARGS` Django setting (and `chrome_args` function parameter to `generate_pdf()`) which accepts a list of string parameters to pass to Google Chrome when calling it.
 - Added compatibility with MacOS.
-
 
 ## [1.1.1](https://github.com/imsweb/django-chromepdf/tree/1.1.1) - 2020-11-03
 

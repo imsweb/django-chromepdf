@@ -33,7 +33,7 @@ class ChromePdfMaker:
         pdf_kwargs = clean_pdf_kwargs(**pdf_kwargs)
         return pdf_kwargs
 
-    def generate_pdf(self, html, pdf_kwargs):
+    def generate_pdf(self, html, pdf_kwargs=None):
         """Generate a PDF file from an html string and return the PDF as a bytes object."""
 
         pdf_kwargs = self._clean_pdf_kwargs(pdf_kwargs)
@@ -54,7 +54,7 @@ class ChromePdfMaker:
         outbytes = base64.b64decode(result['data'])
         return outbytes
 
-    def generate_pdf_url(self, url, pdf_kwargs):
+    def generate_pdf_url(self, url, pdf_kwargs=None):
         """Generate a PDF file from a url (such as a file:/// url) and return the PDF as a bytes object."""
 
         warnings.warn("ChromePdfMaker.generate_pdf_url() is deprecated, use generate_pdf() instead.", DeprecationWarning)
