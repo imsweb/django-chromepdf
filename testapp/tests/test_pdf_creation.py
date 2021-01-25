@@ -3,6 +3,7 @@ import pathlib
 import tempfile
 from io import BytesIO
 from unittest.case import TestCase
+from unittest.mock import patch
 
 from django.conf import settings  # @UnusedImport
 from django.test.utils import override_settings
@@ -70,6 +71,18 @@ class GeneratePdfSimpleTests(TestCase):
         self.assertIsInstance(pdfbytes, bytes)
         self.assertEqual(1, extractText(pdfbytes).count(html))
 
+    @override_settings(CHROMEPDF={'CHROME_PATH': '/chrome', 'CHROMEDRIVER_PATH': '/chromedriver', 'CHROME_ARGS': ['--no-sandbox']})
+    def test_generate_pdf_maker_args(self):
+        """Test to make sure the settings for chromedriver are ultimately passed to it when generating a PDF."""
+
+        html = 'One Word'
+        pdfmaker = ChromePdfMaker()
+        with patch('chromepdf.maker.get_chrome_webdriver') as func:
+            with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
+
+                pdfmaker.generate_pdf(html)
+                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', chrome_args=['--no-sandbox'])
+
 
 class GeneratePdfUrlSimpleTests(TestCase):
 
@@ -100,6 +113,17 @@ class GeneratePdfUrlSimpleTests(TestCase):
 
         with self.assertRaises(ValueError):
             _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
+
+    @override_settings(CHROMEPDF={'CHROME_PATH': '/chrome', 'CHROMEDRIVER_PATH': '/chromedriver', 'CHROME_ARGS': ['--no-sandbox']})
+    def test_generate_pdf_url_maker_args(self):
+        """Test to make sure the settings for chromedriver are ultimately passed to it when generating a PDF."""
+
+        pdfmaker = ChromePdfMaker()
+        with patch('chromepdf.maker.get_chrome_webdriver') as func:
+            with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
+
+                pdfmaker.generate_pdf_url('file:///some/file')
+                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfEncodingTests(TestCase):

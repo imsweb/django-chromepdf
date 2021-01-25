@@ -4,7 +4,7 @@ from django.test.utils import override_settings
 
 from chromepdf.conf import parse_settings
 from chromepdf.pdfconf import clean_pdf_kwargs
-from chromepdf.sizes import PAPER_FORMATS, convert_to_inches
+from chromepdf.sizes import convert_to_inches
 
 CHROME_PATH_SETTING_VAL = r'C://django/settings/path/to/my/chrome'
 CHROMEDRIVER_PATH_SETTING_VAL = r'C://django/settings/path/to/my/chromedriver'
@@ -32,10 +32,11 @@ class TestParseSettings(SimpleTestCase):
 
         # compare to values of 'DEFAULT_SETTINGS'.
         # hardcode the values so tests will fail if defaults get changed by accident.
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output['chrome_path'], None)
         self.assertEqual(output['chromedriver_path'], None)
         self.assertEqual(output['chromedriver_downloads'], True)
+        self.assertEqual(output['chrome_args'], [])
 
     @override_settings()
     def test_parse_settings_kwargs(self):
@@ -47,29 +48,34 @@ class TestParseSettings(SimpleTestCase):
 
         output = parse_settings(chrome_path=CHROME_PATH_KWARG_VAL,
                                 chromedriver_path=CHROMEDRIVER_PATH_KWARG_VAL,
-                                chromedriver_downloads=False)
+                                chromedriver_downloads=False,
+                                chrome_args=['--no-sandbox'])
 
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output.get('chrome_path'), CHROME_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_path'), CHROMEDRIVER_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chrome_args'), ['--no-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
-                                  'CHROMEDRIVER_DOWNLOADS': False})
+                                  'CHROMEDRIVER_DOWNLOADS': False,
+                                  'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_overridden_settings(self):
         """Test result of parse_settings() function, with overridden settings passed."""
 
         output = parse_settings()
 
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output['chrome_path'], CHROME_PATH_SETTING_VAL)
         self.assertEqual(output['chromedriver_path'], CHROMEDRIVER_PATH_SETTING_VAL)
         self.assertEqual(output['chromedriver_downloads'], False)
+        self.assertEqual(output['chrome_args'], ['--no-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
-                                  'CHROMEDRIVER_DOWNLOADS': True})
+                                  'CHROMEDRIVER_DOWNLOADS': True,
+                                  'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_kwargs_and_overridden_settings(self):
         """
         Test result of parse_settings() function, with kwargs and overridden settings passed.
@@ -78,16 +84,19 @@ class TestParseSettings(SimpleTestCase):
 
         output = parse_settings(chromedriver_downloads=False,
                                 chrome_path=CHROME_PATH_KWARG_VAL,
-                                chromedriver_path=CHROMEDRIVER_PATH_KWARG_VAL)
+                                chromedriver_path=CHROMEDRIVER_PATH_KWARG_VAL,
+                                chrome_args=['yes-sandbox'])
 
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output.get('chrome_path'), CHROME_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_path'), CHROMEDRIVER_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chrome_args'), ['yes-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
-                                  'CHROMEDRIVER_DOWNLOADS': True})
+                                  'CHROMEDRIVER_DOWNLOADS': True,
+                                  'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_kwargs_and_overridden_settings_falsey(self):
         """
         Overridden values should take priority even if they are falsey.
@@ -95,27 +104,32 @@ class TestParseSettings(SimpleTestCase):
 
         output = parse_settings(chrome_path=None,
                                 chromedriver_path=None,
-                                chromedriver_downloads=False)
+                                chromedriver_downloads=False,
+                                chrome_args=[])
 
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output.get('chrome_path'), None)
         self.assertEqual(output.get('chromedriver_path'), None)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chrome_args'), [])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
-                                  'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL})
+                                  'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
+                                  'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_empty_paths(self):
         """Test result of parse_settings() function, where falsey values of the wrong type are converted to correct ones."""
 
         output = parse_settings(chrome_path='',
                                 chromedriver_path='',
-                                chromedriver_downloads=None)
+                                chromedriver_downloads=None,
+                                chrome_args=None)
 
         # parsed values should be converted to None instead of ''
-        self.assertEqual(3, len(output))
+        self.assertEqual(4, len(output))
         self.assertEqual(output['chrome_path'], None)
         self.assertEqual(output['chromedriver_path'], None)
         self.assertEqual(output['chromedriver_downloads'], False)
+        self.assertEqual(output['chrome_args'], [])
 
 
 class TestSettingsOverridesPdfKwargs(SimpleTestCase):
@@ -165,14 +179,3 @@ class TestSettingsOverridesPdfKwargs(SimpleTestCase):
         cleaned = clean_pdf_kwargs(**pdf_kwargs)
         self.assertEqual(8.5, cleaned['paperWidth'])
         self.assertEqual(11, cleaned['paperHeight'])
-
-    @override_settings(CHROMEPDF={'PDF_KWARGS': {'paperWidth': 8.5, 'paperHeight': 11}})
-    def test_override_pdf_kwargs_no_conflict2(self):
-        """
-        Having a settings that contains a conflict with pdf_kwargs argument is okay (second takes priority).
-        """
-
-        pdf_kwargs = {'paperFormat': 'a5'}
-        cleaned = clean_pdf_kwargs(**pdf_kwargs)
-        self.assertEqual(PAPER_FORMATS['a5']['width'], cleaned['paperWidth'])
-        self.assertEqual(PAPER_FORMATS['a5']['height'], cleaned['paperHeight'])

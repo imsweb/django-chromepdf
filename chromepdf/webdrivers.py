@@ -119,17 +119,32 @@ def download_chromedriver_version(version, force=False):
 
 
 @contextmanager
-def get_chrome_webdriver(chrome_path, chromedriver_path):
+def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
     """
     Create and return a Chrome webdriver. Is a context manager, and will automatically close the driver. Usage:
 
     * chromedriver_path: Path to your chromedriver executable. If None, will try to find it on PATH via Selenium.
     * chrome_path: Path to your Chrome exe. If None, driver will try to find it automatically.
+    kwarg-only:
+    * chrome_args: List of options to pass to Chrome.
 
     with get_chrome_webdriver(...) as driver:
         # call commands...
     # driver is automatically closed
     """
+
+    chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs)
+
+    # contextmanager.__enter__
+    driver = webdriver.Chrome(**chrome_webdriver_kwargs)
+    yield driver
+
+    # contextmanager.__exit__
+    driver.close()
+
+
+def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
+    """Return the kwargs needed to pass to webdriver.Chrome(), given the CHROMEPDF settings."""
 
     # at one point "-disable-gpu" was required for headless Chrome. Keep it here just in case.
     # https://bugs.chromium.org/p/chromium/issues/detail?id=737678
@@ -138,6 +153,11 @@ def get_chrome_webdriver(chrome_path, chromedriver_path):
     options.add_argument("--disable-gpu")
 
     options.add_argument("--log-level=3")  # silence logging
+
+    # add extra chrome args
+    chrome_args = kwargs.pop('chrome_args', [])
+    for argv in chrome_args:
+        options.add_argument(argv)
 
     # silence the "DevTools started" message on windows
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2907#c3
@@ -157,12 +177,7 @@ def get_chrome_webdriver(chrome_path, chromedriver_path):
     if chromedriver_path is not None:
         chrome_kwargs['executable_path'] = chromedriver_path  # Selenium API
 
-    # contextmanager.__enter__
-    driver = webdriver.Chrome(**chrome_kwargs)
-    yield driver
-
-    # contextmanager.__exit__
-    driver.close()
+    return chrome_kwargs
 
 
 def devtool_command(driver, cmd, params={}):

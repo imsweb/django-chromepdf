@@ -82,6 +82,7 @@ You can specify default settings in your Django settings file, if desired, via a
 
 CHROMEPDF = {
     'CHROME_PATH': r'C:\Program Files (x86)\Google\...\chrome.exe',
+    'CHROME_ARGS': [], # Optional list of command-line argument strings to pass to Chrome when rendering a PDF.
     'CHROMEDRIVER_PATH': None, # will rely on downloads instead
     'CHROMEDRIVER_DOWNLOADS': True, # automatically download the correct chromedriver for the chrome path
     'PDF_KWARGS': {

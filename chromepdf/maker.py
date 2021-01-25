@@ -21,6 +21,12 @@ class ChromePdfMaker:
         self._chromedriver_path = settings['chromedriver_path']
         self._chromedriver_downloads = settings['chromedriver_downloads']
 
+        self._webdriver_kwargs = {
+            'chrome_args': settings['chrome_args'],
+            'chrome_path': self._chrome_path,
+            'chromedriver_path': self._chromedriver_path,
+        }
+
         # download chromedriver if we have chrome, and downloads are enabled
         if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:
             chrome_version = get_chrome_version(self._chrome_path)
@@ -38,7 +44,7 @@ class ChromePdfMaker:
 
         pdf_kwargs = self._clean_pdf_kwargs(pdf_kwargs)
 
-        with get_chrome_webdriver(chrome_path=self._chrome_path, chromedriver_path=self._chromedriver_path) as driver:
+        with get_chrome_webdriver(**self._webdriver_kwargs) as driver:
 
             # we could put the html here. but data urls in Chrome are limited to 2MB.
             dataurl = "data:text/html;charset=utf-8," + urllib.parse.quote('')
@@ -68,7 +74,7 @@ class ChromePdfMaker:
 
         pdf_kwargs = self._clean_pdf_kwargs(pdf_kwargs)
 
-        with get_chrome_webdriver(chrome_path=self._chrome_path, chromedriver_path=self._chromedriver_path) as driver:
+        with get_chrome_webdriver(**self._webdriver_kwargs) as driver:
             driver.get(url)
             result = devtool_command(driver, "Page.printToPDF", pdf_kwargs)
 

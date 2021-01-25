@@ -5,8 +5,10 @@ from unittest.case import TestCase
 
 from django.test.utils import override_settings
 
+from chromepdf.conf import parse_settings
 from chromepdf.maker import ChromePdfMaker
-from chromepdf.webdrivers import (_get_chromedriver_download_path,
+from chromepdf.webdrivers import (_get_chrome_webdriver_kwargs,
+                                  _get_chromedriver_download_path,
                                   _get_chromedriver_environment_path,
                                   download_chromedriver_version,
                                   get_chrome_version)
@@ -21,6 +23,18 @@ class ChromeDriverDownloadTests(TestCase):
         # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
         if not _get_chromedriver_environment_path():
             raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+
+    def test_chromedriver_args(self):
+
+        # ensure default arguments are passed
+        with override_settings(CHROMEPDF={}):
+            options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3'])
+
+        # ensure extra added argument from CHROME_ARGS is passed
+        with override_settings(CHROMEPDF={'CHROME_ARGS': ['--no-sandbox']}):
+            options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', "--no-sandbox"])
 
     @override_settings(CHROMEPDF={})
     def test_chromedriver_downloads(self):

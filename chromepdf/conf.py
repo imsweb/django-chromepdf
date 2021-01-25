@@ -3,6 +3,7 @@ DEFAULT_SETTINGS = {
     'CHROMEDRIVER_PATH': None,
     'CHROMEDRIVER_DOWNLOADS': True,
     # also, PDF_KWARGS, but it's handled differently
+    'CHROME_ARGS': [],
 }
 
 
@@ -40,6 +41,9 @@ def parse_settings(**overrides):
         if k == 'CHROMEDRIVER_DOWNLOADS':  # boolean settings
             if output[k_lower] is None:
                 output[k_lower] = False
+        elif k == 'CHROME_ARGS':
+            if output[k_lower] is None:
+                output[k_lower] = []
         else:  # path settings
             if output[k_lower] == '':
                 output[k_lower] = None
