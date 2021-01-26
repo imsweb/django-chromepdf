@@ -1,18 +1,14 @@
 import os
 import pathlib
 import tempfile
+from unittest import mock
 from unittest.case import TestCase
 
+from django.test.utils import override_settings
+
+from chromepdf.conf import get_chromepdf_settings_dict
 from chromepdf.webdrivers import _get_chromedriver_environment_path
-
-
-def createTempFile(file_bytes):
-    if isinstance(file_bytes, str):
-        file_bytes = file_bytes.encode('utf8')
-    temp = tempfile.NamedTemporaryFile(delete=False)
-    temp.write(file_bytes)  # 10 bytes
-    temp.close()  # close it, so it can be copied from for opens
-    return temp
+from testapp.tests.utils import createTempFile
 
 
 class TestWithoutDjangoTests(TestCase):
@@ -59,6 +55,23 @@ class TestWithoutDjangoTests(TestCase):
 
         self.assertEqual(1, total_count)
         #self.assertEqual(8, total_files)
+
+    def test_get_chromepdf_settings_dict(self):
+
+        # Simulate an ImportError by hiding django.conf
+        # This should cause import to silently fail. Should return an empty dict even though setting exists.
+        with override_settings(CHROMEPDF={'CHROME_PATH': '/path'}):
+
+            # this will simulate ImportError of django.conf
+            with mock.patch.dict('sys.modules', {'django.conf': None}):  # @UndefinedVariable
+
+                settings = get_chromepdf_settings_dict()
+                self.assertEqual(settings, {})
+
+        # Test when no import error occurs
+        with override_settings(CHROMEPDF={'CHROME_PATH': '/path'}):
+            settings = get_chromepdf_settings_dict()
+            self.assertEqual(settings, {'CHROME_PATH': '/path'})
 
     def test_generate_pdf_without_django(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""

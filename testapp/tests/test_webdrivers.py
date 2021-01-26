@@ -1,17 +1,18 @@
 import os
-import platform
 import time
 from unittest.case import TestCase
 
 from django.test.utils import override_settings
 
 from chromepdf.conf import parse_settings
+from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (_get_chrome_webdriver_kwargs,
                                   _get_chromedriver_download_path,
                                   _get_chromedriver_environment_path,
                                   download_chromedriver_version,
-                                  get_chrome_version)
+                                  get_chrome_version, get_chrome_webdriver)
+from testapp.tests.utils import findChromePath
 
 
 class ChromeDriverDownloadTests(TestCase):
@@ -43,12 +44,7 @@ class ChromeDriverDownloadTests(TestCase):
         Test the file times of the chromedriver file to see if it's been updated or not.
         """
 
-        is_windows = (platform.system() == 'Windows')
-        if is_windows:
-            chrome_path = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-        else:  # macos
-            chrome_path = r"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-
+        chrome_path = findChromePath()
         version = get_chrome_version(chrome_path)
 
         driver_path = _get_chromedriver_download_path(version[0])
@@ -90,3 +86,24 @@ class ChromeDriverDownloadTests(TestCase):
         _pdfmaker = ChromePdfMaker(chrome_path=chrome_path)
         mtime2 = os.path.getmtime(driver_path)
         self.assertEqual(mtime, mtime2)  # time should not have changed.
+
+    def test_chromedriver_downloads_part2_bad_paths(self):
+        """This test MUST come after test_chromedriver_downloads() otherwise delete() call will fail."""
+
+        bad_path = r'C:\bad_path.exe'
+        chrome_path = findChromePath()
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+
+        # bad chrome path should throw exception
+        with self.assertRaises(ChromePdfException):
+            with get_chrome_webdriver(chrome_path=bad_path, chromedriver_path=chromedriver_path):
+                pass
+
+        # bad chromedriver path should throw exception
+        with self.assertRaises(ChromePdfException):
+            with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=bad_path):
+                pass
+
+        # don't throw exception
+        with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path):
+            pass

@@ -1,0 +1,11 @@
+# TEST COVERAGE AND REPORTING:
+# ..\pybin\Scripts\coverage run --rcfile=testapp/coverage.txt --source=chromepdf manage.py test 
+# ..\pybin\Scripts\coverage report --rcfile=testapp/coverage.txt --skip-covered
+# ..\pybin\Scripts\coverage report --rcfile=testapp/coverage.txt --skip-covered -m
+[report]
+sort=cover
+omit =
+    chromepdf/chromedrivers/*
+    testapp/*
+    temp/*
+    manage.py

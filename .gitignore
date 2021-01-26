@@ -1,5 +1,6 @@
 *.pyc
 
+.coverage
 .project
 .pydevproject
 .settings

@@ -15,7 +15,10 @@ from chromepdf.exceptions import ChromePdfException
 
 
 def get_chrome_version(path):
-    """Return a 4-tuple containing the version number of the Chrome binary exe, EG for Chrome 85: (85,0,4183,121) """
+    """
+    Return a 4-tuple containing the version number of the Chrome binary exe, EG for Chrome 85: (85,0,4183,121)
+    raise ChromePdfException otherwise (EG if path not found)
+    """
 
     is_windows = (platform.system() == 'Windows')
 
@@ -39,6 +42,8 @@ def get_chrome_version(path):
         version_stdout = proc.stdout.decode('utf8').strip()  # returns, eg, "Google Chrome 85.0.4183.121"
         version = [i for i in version_stdout.split() if i[0].isdigit()][0]
         return tuple(int(i) for i in version.split('.'))
+
+    raise ChromePdfException(f'Could not determine version of Chrome located at: f{path}')
 
 
 def _get_chromedriver_environment_path():
@@ -77,7 +82,7 @@ def download_chromedriver_version(version, force=False):
     * force: If True, will force a download, even if a driver for that version is already saved.
     """
 
-    assert isinstance(version, tuple) and (isinstance(i, int) for i in version)
+    assert isinstance(version, tuple) and (isinstance(i, int) for i in version), f'{version} must be a 4-tuple of ints.'
 
     version_major = version[0]
 
@@ -136,7 +141,16 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
     chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs)
 
     # contextmanager.__enter__
-    driver = webdriver.Chrome(**chrome_webdriver_kwargs)
+    try:
+        driver = webdriver.Chrome(**chrome_webdriver_kwargs)
+    except Exception as e:
+        if chrome_path and not os.path.exists(chrome_path):
+            raise ChromePdfException(f'Could not find a chrome_path path at: {chrome_path}')
+        elif chromedriver_path and not os.path.exists(chromedriver_path):
+            raise ChromePdfException(f'Could not find a chromedriver_path at: {chromedriver_path}')
+        else:
+            raise e
+
     yield driver
 
     # contextmanager.__exit__

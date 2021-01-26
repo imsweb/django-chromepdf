@@ -41,11 +41,14 @@ class ChromePdfKwargsTests(TestCase):
         # Important! Decimal is NOT json-serializable. It must be converted to int/float
         self.assertIsInstance(convert_to_unit(Decimal('1.75'), 'in'), JSON_NUMERIC_TYPES)
 
-        # string lengths MUST provide a unit type.
+        # string lengths MUST provide a unit type. EG '1in' not '1'
         with self.assertRaises(ValueError):
             convert_to_inches('1')
         with self.assertRaises(ValueError):
             convert_to_unit('1', 'in')
+        # test invalid unit types
+        with self.assertRaises(ValueError):
+            convert_to_unit('1', 'zz')
 
     def test_unit_conversions(self):
 

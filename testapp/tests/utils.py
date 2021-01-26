@@ -3,6 +3,7 @@ testapp.tests.utils
 Utility functions for assisting with unit tests.
 """
 
+import os
 import tempfile
 from io import BytesIO
 
@@ -10,6 +11,26 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
+
+
+def findChromePath():
+    """
+    Check for a working path to a Google Chrome instance and return it. Raise Exception if none found.
+    Use this in all unit tests whenever a valid Chrome path instance is needed.
+    """
+
+    chrome_paths = [
+        # Windows
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        # MacOS
+        r"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    ]
+
+    for p in chrome_paths:
+        if os.path.exists(p):
+            return p
+
+    raise RuntimeError('findChromePath() could not find a Google Chrome instance.')
 
 
 def extractText(pdfbytes):
