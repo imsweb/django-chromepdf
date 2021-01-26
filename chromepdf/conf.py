@@ -44,6 +44,9 @@ def parse_settings(**overrides):
         elif k == 'CHROME_ARGS':
             if output[k_lower] is None:
                 output[k_lower] = []
+            elif isinstance(output[k_lower], str):
+                # Prevent passing individual characters in str to Chrome as args. Silent, and unexpected behavior.
+                raise TypeError('The chrome_args/CHROME_ARGS parameter/setting must be an iterable of strings.')
         else:  # path settings
             if output[k_lower] == '':
                 output[k_lower] = None

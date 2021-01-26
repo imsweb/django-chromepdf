@@ -131,6 +131,32 @@ class TestParseSettings(SimpleTestCase):
         self.assertEqual(output['chromedriver_downloads'], False)
         self.assertEqual(output['chrome_args'], [])
 
+    def test_parse_settings_tuples(self):
+        """CHROME_ARGS/chrome_args may be a tuple."""
+
+        # Test CHROME_ARGS setting as a tuple
+        with override_settings(CHROMEPDF={'CHROME_ARGS': ('--no-sandbox',)}):
+            output = parse_settings()
+            self.assertEqual(output['chrome_args'], ('--no-sandbox',))
+
+        # Test chrome_args parameter as a tuple
+        with override_settings(CHROMEPDF={'CHROME_ARGS': []}):
+            output = parse_settings(chrome_args=('--no-sandbox',))
+            self.assertEqual(output['chrome_args'], ('--no-sandbox',))
+
+    def test_parse_settings_type_errors(self):
+        """Test settings values that should raise a TypeError."""
+
+        # CHROME_ARGS setting must be an iterable of strings, not a string
+        with override_settings(CHROMEPDF={'CHROME_ARGS': '--no-sandbox'}):
+            with self.assertRaises(TypeError):
+                _output = parse_settings()
+
+        # chrome_args parameter must be an iterable of strings, not a string
+        with override_settings(CHROMEPDF={'CHROME_ARGS': []}):
+            with self.assertRaises(TypeError):
+                _output = parse_settings(chrome_args='--no-sandbox')
+
 
 class TestSettingsOverridesPdfKwargs(SimpleTestCase):
 

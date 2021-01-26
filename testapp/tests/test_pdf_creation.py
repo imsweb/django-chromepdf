@@ -7,45 +7,12 @@ from unittest.mock import patch
 
 from django.conf import settings  # @UnusedImport
 from django.test.utils import override_settings
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
-from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
-from pdfminer.pdfpage import PDFPage
 from PyPDF2 import PdfFileReader
 
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.pdfconf import clean_pdf_kwargs
-
-
-def extractText(pdfbytes):
-    """Use pdfminer to take a pdf file-like-object/stream and return its text."""
-    import io
-
-    fp = BytesIO(pdfbytes)
-
-    retstr = io.BytesIO()
-    laparams = LAParams()
-
-    rsrcmgr = PDFResourceManager()
-    device = TextConverter(rsrcmgr, retstr, codec='utf-8', laparams=laparams)
-    interpreter = PDFPageInterpreter(rsrcmgr, device)
-    for page in PDFPage.get_pages(fp, caching=True, check_extractable=True):
-        interpreter.process_page(page)
-    text = retstr.getvalue()
-    device.close()
-    retstr.close()
-    if not isinstance(text, str):
-        text = text.decode('utf8')
-    return text
-
-
-def createTempFile(file_bytes):
-    if isinstance(file_bytes, str):
-        file_bytes = file_bytes.encode('utf8')
-    temp = tempfile.NamedTemporaryFile(delete=False)
-    temp.write(file_bytes)  # 10 bytes
-    temp.close()  # close it, so it can be copied from for opens
-    return temp
+from testapp.tests.test_without_django import createTempFile
+from testapp.tests.utils import extractText
 
 
 class GeneratePdfSimpleTests(TestCase):
@@ -63,7 +30,17 @@ class GeneratePdfSimpleTests(TestCase):
 
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_maker(self):
-        """Test outputting a PDF using a ChromePdfMaker object."""
+        """Test outputting a PDF using a ChromePdfMaker object, without passing a pdf_kwargs."""
+
+        html = 'One Word'
+        pdfmaker = ChromePdfMaker()
+        pdfbytes = pdfmaker.generate_pdf(html)
+        self.assertIsInstance(pdfbytes, bytes)
+        self.assertEqual(1, extractText(pdfbytes).count(html))
+
+    @override_settings(CHROMEPDF={})
+    def test_generate_pdf_maker_with_pdf_kwargs(self):
+        """Test outputting a PDF using a ChromePdfMaker object, and passing pdf_kwargs."""
 
         html = 'One Word'
         pdfmaker = ChromePdfMaker()
