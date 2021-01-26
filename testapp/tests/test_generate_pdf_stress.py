@@ -3,7 +3,7 @@ import pathlib
 import tempfile
 from unittest.case import TestCase
 
-from testapp.tests.test_pdf_creation import extractText
+from testapp.tests.utils import extractText
 
 
 class GeneratePdfStressTests(TestCase):
