@@ -206,5 +206,7 @@ def devtool_command(driver, cmd, params={}):
     body = json.dumps({'cmd': cmd, 'params': params})
     response = driver.command_executor._request('POST', url, body)
     if 'status' in response:
+        # response dict only contains a "status" key if an error occurred.
+        # when "status" is present, the "value" will contain the error message.
         raise ChromePdfException(response.get('value'))
     return response.get('value')

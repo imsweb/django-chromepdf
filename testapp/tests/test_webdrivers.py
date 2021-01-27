@@ -10,6 +10,7 @@ from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (_get_chrome_webdriver_kwargs,
                                   _get_chromedriver_download_path,
                                   _get_chromedriver_environment_path,
+                                  devtool_command,
                                   download_chromedriver_version,
                                   get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import findChromePath
@@ -88,7 +89,7 @@ class ChromeDriverDownloadTests(TestCase):
         self.assertEqual(mtime, mtime2)  # time should not have changed.
 
     def test_chromedriver_downloads_part2_bad_paths(self):
-        """This test MUST come after test_chromedriver_downloads() otherwise delete() call will fail."""
+        """This test MUST come after test_chromedriver_downloads() otherwise os.remove(driver_path) call will fail."""
 
         bad_path = r'C:\bad_path.exe'
         chrome_path = findChromePath()
@@ -107,3 +108,14 @@ class ChromeDriverDownloadTests(TestCase):
         # don't throw exception
         with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path):
             pass
+
+    def test_devtool_command_failure(self):
+        """Make sure bad parameters to devtool_command will raise ChromePdfException."""
+
+        chrome_path = findChromePath()
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+
+        with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path) as driver:
+            with self.assertRaises(ChromePdfException):
+                # invalid page range should cause a "Page range syntax error" message that we raise as ChromePdfexception
+                _result = devtool_command(driver, "Page.printToPDF", {'pageRanges': '3-1'})
