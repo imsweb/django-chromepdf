@@ -16,7 +16,7 @@ ChromePDF can take advantage of [Django](https://pypi.org/project/Django/) setti
 
 **1. Install ChromePDF via pip.**
 
-The 1.1 branch can be installed via PyPI:
+The 1.2 branch can be installed via PyPI:
 ```
 pip install django-chromepdf~=1.2.0
 ```
