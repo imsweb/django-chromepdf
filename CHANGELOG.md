@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Selenium 4 is now preferred (dependency changed from `selenium<4` to `selenium<4,>=3`)
 
 
-## [1.2.0](https://github.com/imsweb/django-chromepdf/tree/1.2.0) 2021-02-04
+## [1.2.0](https://github.com/imsweb/django-chromepdf/tree/1.2.0) - 2021-02-04
 
 ### Added
 
