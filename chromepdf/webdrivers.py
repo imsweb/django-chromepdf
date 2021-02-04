@@ -169,7 +169,7 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
     options.add_argument("--log-level=3")  # silence logging
 
     # add extra chrome args
-    chrome_args = kwargs.pop('chrome_args', [])
+    chrome_args = kwargs.get('chrome_args', [])
     for argv in chrome_args:
         options.add_argument(argv)
 
