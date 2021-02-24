@@ -94,3 +94,16 @@ class ChromePdfKwargsTests(TestCase):
         self.assertEqual(0, convert_to_unit('0mm', 'cm'))
         self.assertEqual(0, convert_to_unit('0in', 'cm'))
         self.assertEqual(0, convert_to_unit(0, 'cm'))
+
+    def test_unit_conversions_uppercase(self):
+
+        # uppercase is apparently valid CSS. And chromepdf currently takes it. So, preserve that behavior.
+        self.assertEqual(1, convert_to_inches('2.54CM'))
+        self.assertEqual(1, convert_to_inches('2.54Cm'))
+
+        # uppercase has never worked for this function and I see no reason to change that.
+        # must user lowercase. maybe this is inconsistent?
+        with self.assertRaises(ValueError):
+            convert_to_unit(1, 'IN')
+        with self.assertRaises(ValueError):
+            convert_to_unit(1, 'In')
