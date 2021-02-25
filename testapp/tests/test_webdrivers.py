@@ -109,6 +109,32 @@ class ChromeDriverDownloadTests(TestCase):
         with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path):
             pass
 
+    def test_chromedriver_downloads_part3_kwargs_unchanged(self):
+        """
+        get_chrome_webdriver() should not change the arguments passed into it.
+        This test ensures that successive calls using the same settings dict won't change it.
+        This especially applies to the _webdriver_kwargs dict in the ChromePdfMaker class.
+        """
+
+        chrome_path = findChromePath()
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+
+        kwargs = {
+            'chrome_path': chrome_path,
+            'chromedriver_path': chromedriver_path,
+            'chrome_args': ['--no-sandbox']
+        }
+
+        # should especially not change kwargs
+        _get_chrome_webdriver_kwargs(**kwargs)
+
+        # should not change kwargs
+        with get_chrome_webdriver(**kwargs):
+            pass
+
+        # kwargs was unchanged by pop etc commands?
+        self.assertEqual(3, len(kwargs))
+
     def test_devtool_command_failure(self):
         """Make sure bad parameters to devtool_command will raise ChromePdfException."""
 

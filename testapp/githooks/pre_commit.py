@@ -71,75 +71,24 @@ def autopep8(filepath):
 
     # select or ignore, not both
     # list of codes can be found here: https://github.com/hhatto/autopep8#features
-    select_codes = []
-    ignore_codes = [
+    select_errors = []
+    ignore_errors = [
         'E501',  # c /2068/
         'E402', 'E401',  # these are import-related. isort takes care of those.
     ]
     overrides = ["--max-line-length=120", "--aggressive"]
 
     args = ['autopep8', '--in-place']
-    if select_codes and ignore_codes:
-        print('Error: select and ignore codes are mutually exclusive')
+    if select_errors and ignore_errors:
+        print('autopep8 cannot handle both select and ignore errors at the same time.')
         exit(1)
-    elif select_codes:
-        args.extend(('--select', ','.join(select_codes)))
-    elif ignore_codes:
-        args.extend(('--ignore', ','.join(ignore_codes)))
+    elif select_errors:
+        args.extend(('--select', ','.join(select_errors)))
+    elif ignore_errors:
+        args.extend(('--ignore', ','.join(ignore_errors)))
     args.extend(overrides)
     args.append(filepath)
     _output = system(*args)
-
-
-def run_pylint(files, outfile=None):
-    """Run pylint on a list containing directories and/or file paths."""
-    assert not isinstance(files, str)  # must be a list of stringss
-
-    from pylint.lint.run import Run as PyLint_Run
-
-    class WritableObject:
-        "dummy output stream for pylint"
-
-        def __init__(self):
-            self.content = []
-
-        def write(self, st):
-            "dummy write"
-            self.content.append(st)
-
-        def read(self):
-            "dummy read"
-            return self.content
-    from pylint.reporters.text import TextReporter
-    pylint_output = WritableObject()
-
-    project_base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-    rcfilepath = os.path.join(project_base_dir, '.pylintrc')
-    if not os.path.exists(rcfilepath):
-        print('Pylint could not find rcfile: %s' % rcfilepath)
-        exit(1)
-    pylint_args = ['--rcfile', rcfilepath, *files]
-
-    PyLint_Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
-    has_errors = False
-
-    if outfile is None:  # print output to stdout
-        for l in pylint_output.read():
-            if l.strip():  # skip empty lines
-                print(l.rstrip())  # remove training newline so we only print one newline
-                if l.strip().startswith('chromepdf') or l.strip().startswith('testapp'):
-                    has_errors = True
-    else:
-        outfilepath = os.path.join(project_base_dir, outfile)
-        print(outfilepath)
-        #pylint_args.extend(['>',outfilepath, ''])
-        with open(outfilepath, 'w') as f:
-            for l in pylint_output.read():
-                f.write(l)
-
-    if has_errors:
-        print('Pylint detected errors, aborting')
-        exit(1)
 
 
 def main():
@@ -153,8 +102,6 @@ def main():
         import autopep8 as _ap8  # @UnusedImport
         from isort.hooks import git_hook as isort_git_hook
 
-        # from flake8.main.git import hook as flake8_git_hook # we are not using flake8
-        # from pylint.lint.run import Run as _PyLint_Run  # @UnusedImport
     except ImportError:
         print("'autopep8' and 'isort' are required.", file=sys.stderr)
         exit(1)
@@ -182,12 +129,6 @@ def main():
         nonascii(filepath)
         autopep8(filepath)
         system("git", "add", filepath)
-
-#     # pylint will run code linter and abort if errors/warnings detected
-#     print('Running pylint...')
-#     files_joined = [os.path.join(basedir, f) for f in files if f.endswith('.py')]  # .py files only
-#     if files_joined:
-#         run_pylint(files_joined)
 
     # we are not using flake8.
 #     # flake8: check for syntax errors/warnings
