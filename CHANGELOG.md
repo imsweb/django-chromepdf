@@ -10,6 +10,13 @@ All notable changes to this project will be documented in this file.
 - Selenium 4 is now preferred (dependency changed from `selenium<4` to `selenium<4,>=3`)
 
 
+## [1.2.1](https://github.com/imsweb/django-chromepdf/tree/1.2.1) - 2021-03-04
+
+### Fixed
+
+- Fixed a bug where the chromedriver download path was not being used if a chromedriver was just downloaded. This bug was introduced in 1.2.0. Earlier versions are not affected.
+
+
 ## [1.2.0](https://github.com/imsweb/django-chromepdf/tree/1.2.0) - 2021-02-04
 
 ### Added
