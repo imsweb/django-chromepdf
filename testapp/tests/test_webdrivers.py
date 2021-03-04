@@ -77,8 +77,11 @@ class ChromeDriverDownloadTests(TestCase):
         # pdfmaker should auto-download it if chrome path is provided
         if os.path.exists(driver_path):
             os.remove(driver_path)
-        _pdfmaker = ChromePdfMaker(chrome_path=chrome_path)
+        pdfmaker = ChromePdfMaker(chrome_path=chrome_path)
         self.assertTrue(os.path.exists(driver_path))
+        # Downloading a chromedriver should cause the maker's internal "settings" to be updated.
+        self.assertEqual(pdfmaker._chromedriver_path, driver_path)
+        self.assertEqual(pdfmaker._webdriver_kwargs['chromedriver_path'], driver_path)
         mtime = os.path.getmtime(driver_path)
 
         time.sleep(1)  # wait one second

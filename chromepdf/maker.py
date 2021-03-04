@@ -21,16 +21,16 @@ class ChromePdfMaker:
         self._chromedriver_path = settings['chromedriver_path']
         self._chromedriver_downloads = settings['chromedriver_downloads']
 
+        # download chromedriver if we have chrome, and downloads are enabled
+        if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:
+            chrome_version = get_chrome_version(self._chrome_path)
+            self._chromedriver_path = download_chromedriver_version(chrome_version)
+
         self._webdriver_kwargs = {
             'chrome_args': settings['chrome_args'],
             'chrome_path': self._chrome_path,
             'chromedriver_path': self._chromedriver_path,
         }
-
-        # download chromedriver if we have chrome, and downloads are enabled
-        if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:
-            chrome_version = get_chrome_version(self._chrome_path)
-            self._chromedriver_path = download_chromedriver_version(chrome_version)
 
     def _clean_pdf_kwargs(self, pdf_kwargs):
         """A wrapper around clean_pdf_kwargs() that handles None as well."""
