@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import tempfile
@@ -7,7 +8,7 @@ from unittest.mock import patch
 
 from django.conf import settings  # @UnusedImport
 from django.test.utils import override_settings
-from PyPDF2 import PdfFileReader
+from pikepdf import Pdf
 
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
@@ -186,16 +187,20 @@ class PdfPageSizeTests(TestCase):
     """
     Test the functions that actually generate the PDFs.
 
-    Uses PyPDF2 to parse the results.
+    Uses PikePDF to parse the results.
     """
 
     def assertPageSizeInInches(self, pdfbytes, expected_size):
-        reader = PdfFileReader(BytesIO(pdfbytes))
-        page_rect = reader.getPage(0).mediaBox
+        pdf = Pdf.open(BytesIO(pdfbytes))
+
+        # this gives us a 4-length list similar to: [0, 0, 612, 792] for an 8.5x11 page.
+        page_rect = pdf.pages[0].MediaBox
+        page_rect = json.loads(page_rect.to_json().decode('utf8'))  # there must be an easier way...
+        _, _, w, h = page_rect
 
         # allow some margin of error (2 pixels at 72 dpi)
-        self.assertTrue(expected_size[0] * 72 - 2 <= page_rect.upperRight[0] <= expected_size[0] * 72 + 2)
-        self.assertTrue(expected_size[1] * 72 - 2 <= page_rect.upperRight[1] <= expected_size[1] * 72 + 2)
+        self.assertTrue(expected_size[0] * 72 - 2 <= w <= expected_size[0] * 72 + 2)
+        self.assertTrue(expected_size[1] * 72 - 2 <= h <= expected_size[1] * 72 + 2)
 
     @override_settings(CHROMEPDF={})
     def test_default_size(self):
