@@ -16,17 +16,12 @@ ChromePDF can take advantage of [Django](https://pypi.org/project/Django/) setti
 
 **1. Install ChromePDF via pip.**
 
-The 1.2 branch can be installed via PyPI:
+The latest version can be installed via PyPI. This will also install Selenium, the only dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4).
 ```
-pip install django-chromepdf~=1.2.0
-```
-
-**2. Install Selenium,** preferably version 3 or higher. (Installing ChromePDF via pip should take care of this step)
-```
-pip install selenium~=3.141.0
+pip install django-chromepdf~=1.3.0
 ```
 
-**3. Set the location of your Chrome executable.** This can be done in one of two ways:
+**2. Set the location of your Chrome executable.** This can be done in one of two ways:
 
 * In your Django settings, set `CHROMEPDF['CHROME_PATH']` to the full path of the executable (E.G., `r'C:\Program Files (x86)\Google\...\chrome.exe'`)
 * OR, pass `chrome_path` as a keyword argument to the `generate_pdf()` function.
