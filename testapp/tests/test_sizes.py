@@ -46,9 +46,16 @@ class ChromePdfKwargsTests(TestCase):
             convert_to_inches('1')
         with self.assertRaises(ValueError):
             convert_to_unit('1', 'in')
+
         # test invalid unit types
         with self.assertRaises(ValueError):
             convert_to_unit('1', 'zz')
+
+        # CSS does not allow whitespace in length values, so we do not, either
+        with self.assertRaises(ValueError):
+            convert_to_inches('1 in')
+        with self.assertRaises(ValueError):
+            convert_to_unit('1 in', 'in')
 
     def test_unit_conversions(self):
 

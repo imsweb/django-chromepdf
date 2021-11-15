@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 - Selenium 4 is now preferred; Selenium 3 is still supported (dependency changed from `selenium<4` to `selenium<5,>=3`)
 - Minimum-supported Django version is now 3.2 (Django is not a required dependency but can be used for global configs; using prior versions may work but is not guaranteed)
 
+**Added**
+
+- Added support for downloading Apple M1 ARM-compatible chromedrivers when used on an Apple M1 device.
+
 
 ## [1.2.1](https://github.com/imsweb/django-chromepdf/tree/1.2.1) - 2021-03-04
 

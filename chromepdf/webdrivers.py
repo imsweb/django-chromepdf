@@ -74,11 +74,14 @@ def _get_chromedriver_download_path(major_version):
 
 def download_chromedriver_version(version, force=False):
     """
+    Download a chromedriver executable for the Chrome version specified, if not already downloaded or force=True.
+    Return the path of the existing (or newly downloaded) chromedriver executable.
+
     See https://chromedriver.chromium.org/downloads/version-selection
     for download url api
 
     Arguments:
-    * version: A 4-tuple version string as returned by get_chrome_version(), such as: (85,0,4183,121)
+    * version: A 4-int tuple version as returned by get_chrome_version(), such as: (85,0,4183,121)
     * force: If True, will force a download, even if a driver for that version is already saved.
     """
 
@@ -86,23 +89,26 @@ def download_chromedriver_version(version, force=False):
 
     version_major = version[0]
 
+    # Return the existing path if it exists and we're not forcing a new download.
     chromedriver_download_path = _get_chromedriver_download_path(version_major)
     if os.path.exists(chromedriver_download_path) and not force:
         return chromedriver_download_path
 
     # Google's API for the latest release takes only the first 3 parts of the version
-    version_first3parts = '.'.join(str(i) for i in version[:3])  # EG, 85.0.4183
+    version_first3parts = '.'.join(str(i) for i in version[:3])  # EG, "85.0.4183"
 
-    # This url returns a 4-part version string for which a chromedriver exists.
+    # This url returns a 4-part version string of the latest compatible chromedriver for your Chrome version.
+    # This might be DIFFERENT than the version of your Chrome executable.
     url = f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{version_first3parts}'
     with urllib_request.urlopen(url) as f:
         contents = f.read()
-    latest_version_str = contents.decode('utf8')  # EG 85.0.4183.87
+    latest_version_str = contents.decode('utf8')  # EG "85.0.4183.87"
 
-    # These are the filenames of the chromedriver zip files for each OS.
+    # Get the name of the chromedriver zip download file for our particular OS+Processor
     is_windows = (platform.system() == 'Windows')
     is_mac = (platform.system() == 'Darwin')
-    os_plus_numbits = 'win32' if is_windows else 'mac64' if is_mac else 'linux64'
+    is_mac_m1 = (is_mac and platform.processor() == 'arm')
+    os_plus_numbits = 'win32' if is_windows else 'mac64_m1' if is_mac_m1 else 'mac64' if is_mac else 'linux64'
     filename = f'chromedriver_{os_plus_numbits}.zip'
 
     # Download the zip file
