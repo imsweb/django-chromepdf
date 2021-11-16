@@ -5,11 +5,16 @@ from setuptools import find_packages, setup
 
 
 def get_version():
+    """Return the version string stored at chromepdf.__version__"""
     with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py')) as fp:
         return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)  # @UndefinedVariable
 
 
 def get_long_description():
+    """
+    Return a long description consisting of the readme's contents.
+    The contents are Markdown, so be sure to set the "long_description_content_type" accordingly.
+    """
     with open(os.path.join(os.path.dirname(__file__), 'README.md')) as fp:
         return fp.read()
 
@@ -27,7 +32,7 @@ setup(
     packages=find_packages(exclude=('testapp',)),
     include_package_data=True,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',

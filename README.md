@@ -6,17 +6,21 @@ ChromePDF is a small Python 3 library that uses [Selenium](https://pypi.org/proj
 
 ChromePDF provides a function that accepts an html string, plus a dict of page parameters, and other settings, and returns the bytes containing a PDF:
 
-`pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)`
+```
+pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)
+```
 
 Because it renders via Chrome, it supports a wide range of CSS and HTML tags that should display the same as if you used Chrome to view the HTML itself.
 
 ChromePDF can take advantage of [Django](https://pypi.org/project/Django/) settings for configuration, but Django is not a required dependency.
 
+Official ChromePDF releases [are available on PyPI](https://pypi.org/project/django-chromepdf/).
+
 ## Installation
 
 **1. Install ChromePDF via pip.**
 
-The latest version can be installed via PyPI. This will also install Selenium, the only dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4). You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes.
+The latest version can be installed via PyPI. This will also install Selenium, the only direct dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4). You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes.
 ```
 pip install django-chromepdf~=1.3.0
 ```

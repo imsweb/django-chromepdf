@@ -1,4 +1,3 @@
-# Make sure to update the string in setup.py also (version='...')
 __version__ = '1.3.0'
 
 from chromepdf.exceptions import ChromePdfException
