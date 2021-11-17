@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import os
@@ -10,6 +11,8 @@ from subprocess import PIPE
 from urllib import request as urllib_request
 
 from selenium import webdriver
+from selenium.webdriver.common.print_page_options import (PrintOptions,
+                                                          _PageOpts)
 
 from chromepdf.exceptions import ChromePdfException
 
@@ -74,14 +77,11 @@ def _get_chromedriver_download_path(major_version):
 
 def download_chromedriver_version(version, force=False):
     """
-    Download a chromedriver executable for the Chrome version specified, if not already downloaded or force=True.
-    Return the path of the existing (or newly downloaded) chromedriver executable.
-
     See https://chromedriver.chromium.org/downloads/version-selection
     for download url api
 
     Arguments:
-    * version: A 4-int tuple version as returned by get_chrome_version(), such as: (85,0,4183,121)
+    * version: A 4-tuple version string as returned by get_chrome_version(), such as: (85,0,4183,121)
     * force: If True, will force a download, even if a driver for that version is already saved.
     """
 
@@ -89,26 +89,23 @@ def download_chromedriver_version(version, force=False):
 
     version_major = version[0]
 
-    # Return the existing path if it exists and we're not forcing a new download.
     chromedriver_download_path = _get_chromedriver_download_path(version_major)
     if os.path.exists(chromedriver_download_path) and not force:
         return chromedriver_download_path
 
     # Google's API for the latest release takes only the first 3 parts of the version
-    version_first3parts = '.'.join(str(i) for i in version[:3])  # EG, "85.0.4183"
+    version_first3parts = '.'.join(str(i) for i in version[:3])  # EG, 85.0.4183
 
-    # This url returns a 4-part version string of the latest compatible chromedriver for your Chrome version.
-    # This might be DIFFERENT than the version of your Chrome executable.
+    # This url returns a 4-part version string for which a chromedriver exists.
     url = f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{version_first3parts}'
     with urllib_request.urlopen(url) as f:
         contents = f.read()
-    latest_version_str = contents.decode('utf8')  # EG "85.0.4183.87"
+    latest_version_str = contents.decode('utf8')  # EG 85.0.4183.87
 
-    # Get the name of the chromedriver zip download file for our particular OS+Processor
+    # These are the filenames of the chromedriver zip files for each OS.
     is_windows = (platform.system() == 'Windows')
     is_mac = (platform.system() == 'Darwin')
-    is_mac_m1 = (is_mac and platform.processor() == 'arm')
-    os_plus_numbits = 'win32' if is_windows else 'mac64_m1' if is_mac_m1 else 'mac64' if is_mac else 'linux64'
+    os_plus_numbits = 'win32' if is_windows else 'mac64' if is_mac else 'linux64'
     filename = f'chromedriver_{os_plus_numbits}.zip'
 
     # Download the zip file
@@ -148,7 +145,7 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
 
     # contextmanager.__enter__
     try:
-        driver = webdriver.Chrome(**chrome_webdriver_kwargs)
+        driver = webdriver.Edge(**chrome_webdriver_kwargs)
     except Exception as e:
         if chrome_path and not os.path.exists(chrome_path):
             raise ChromePdfException(f'Could not find a chrome_path path at: {chrome_path}')
@@ -168,7 +165,7 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     # at one point "-disable-gpu" was required for headless Chrome. Keep it here just in case.
     # https://bugs.chromium.org/p/chromium/issues/detail?id=737678
-    options = webdriver.ChromeOptions()
+    options = webdriver.EdgeOptions()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
 
@@ -190,6 +187,7 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
     if hasattr(options, 'ignore_local_proxy_environment_variables') and callable(options.ignore_local_proxy_environment_variables):
         options.ignore_local_proxy_environment_variables()
 
+    print('options._ignore_local_proxy', options._ignore_local_proxy)
     if chrome_path is not None:
         options.binary_location = chrome_path  # Selenium API
 
@@ -216,3 +214,26 @@ def devtool_command(driver, cmd, params={}):
         # when "status" is present, the "value" will contain the error message.
         raise ChromePdfException(response.get('value'))
     return response.get('value')
+
+
+def get_printed_pdf_bytes(driver, pdf_kwargs):
+
+    if hasattr(driver, 'print_page'):
+        outbytes = _driver_call_print_page(driver, pdf_kwargs)
+        outbytes = base64.b64decode(outbytes)
+    else:
+        result = devtool_command(driver, "Page.printToPDF", pdf_kwargs)
+        outbytes = base64.b64decode(result['data'])
+
+    return outbytes
+
+
+def _driver_call_print_page(driver, params):
+
+    print('driver calling print page')
+    print_options = PrintOptions()
+    for k, v in params.items():
+        setattr(print_options, k, v)
+
+    #     def print_page(self, print_options: Optional[PrintOptions] = None) -> str:
+    return driver.print_page(print_options=print_options)

@@ -7,7 +7,8 @@ from chromepdf.conf import parse_settings
 from chromepdf.pdfconf import clean_pdf_kwargs
 from chromepdf.webdrivers import (devtool_command,
                                   download_chromedriver_version,
-                                  get_chrome_version, get_chrome_webdriver)
+                                  get_chrome_version, get_chrome_webdriver,
+                                  get_printed_pdf_bytes)
 
 
 class ChromePdfMaker:
@@ -55,9 +56,8 @@ class ChromePdfMaker:
             # we do NOT need to escape any other chars (quotes, etc), including unicode
             driver.execute_script("document.write(`{}`)".format(html))
 
-            result = devtool_command(driver, "Page.printToPDF", pdf_kwargs)
+            outbytes = get_printed_pdf_bytes(driver, pdf_kwargs)
 
-        outbytes = base64.b64decode(result['data'])
         return outbytes
 
     def generate_pdf_url(self, url, pdf_kwargs=None):
@@ -76,7 +76,6 @@ class ChromePdfMaker:
 
         with get_chrome_webdriver(**self._webdriver_kwargs) as driver:
             driver.get(url)
-            result = devtool_command(driver, "Page.printToPDF", pdf_kwargs)
+            outbytes = get_printed_pdf_bytes(driver, pdf_kwargs)
 
-        outbytes = base64.b64decode(result['data'])
         return outbytes
