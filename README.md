@@ -20,7 +20,9 @@ Official ChromePDF releases [are available on PyPI](https://pypi.org/project/dja
 
 **1. Install ChromePDF via pip.**
 
-The latest version can be installed via PyPI. This will also install Selenium, the only direct dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4). You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes.
+The latest version can be installed via PyPI. This will also install Selenium, the only direct dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4). 
+
+You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes. ChromePDF uses [semantic versioning](https://semver.org/) for its release numbering. To ensure backwards compatibility and receive bug fixes, you are encouraged to pin your requirements to a Major.Minor version like so:
 ```
 pip install django-chromepdf~=1.3.0
 ```
