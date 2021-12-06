@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## 1.3.0 - Still in beta. Feature list subject to change. Official Release Date TBD.
+## [1.3.0](https://github.com/imsweb/django-chromepdf/tree/1.3.0) - 2021-12-06
 
 **Changed**
 
