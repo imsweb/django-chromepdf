@@ -3,9 +3,12 @@ import pathlib
 import tempfile
 from unittest.case import TestCase
 
+from django.test.utils import tag
+
 from testapp.tests.utils import extractText
 
 
+@tag('stresstest')
 class GeneratePdfStressTests(TestCase):
 
     def test_generate_pdf_huge_pdfs(self):
