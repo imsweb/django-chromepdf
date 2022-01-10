@@ -21,14 +21,20 @@ class ChromePdfPyPITests(TestCase):
         setup_version = get_version()
         self.assertEqual(setup_version, chromepdf_version)
 
-        # setup has correct long description?
-        from setup import get_long_description
-        setup_long_description = get_long_description()
+        # readme contents make sense?
         readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'README.md')
         with open(readme_path, 'r') as f:
             readme_contents = f.read()
         self.assertGreater(len(readme_contents), 1)
-        self.assertEqual(setup_long_description, readme_contents)
+
+        # setup has correct long description?
+        from setup import get_long_description, _GITHUB_MASTER_ROOT
+        setup_long_description = get_long_description()
+        # relative github urls were expanded to absolute github urls for display on pypi? otherwise they would not work.
+        self.assertIn(f'{_GITHUB_MASTER_ROOT}CHANGELOG.md', setup_long_description)
+        self.assertEqual(setup_long_description.replace(_GITHUB_MASTER_ROOT, ''), readme_contents)
+        # do not expand already-absolute urls?
+        self.assertNotIn(f'{_GITHUB_MASTER_ROOT}https://', setup_long_description)
 
     def test_version(self):
 
