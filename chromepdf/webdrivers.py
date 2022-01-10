@@ -9,9 +9,12 @@ from contextlib import contextmanager
 from subprocess import PIPE
 from urllib import request as urllib_request
 
-from selenium import webdriver
-
+import selenium
 from chromepdf.exceptions import ChromePdfException
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+
+_IS_SELENIUM_3 = selenium.__version__.split('.')[0] == '3'
 
 
 def get_chrome_version(path):
@@ -160,7 +163,7 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
     yield driver
 
     # contextmanager.__exit__
-    driver.close()
+    driver.quit()  # quits the entire driver (driver.close() only closes the current window)
 
 
 def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
@@ -195,7 +198,11 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     chrome_kwargs = {'options': options}
     if chromedriver_path is not None:
-        chrome_kwargs['executable_path'] = chromedriver_path  # Selenium API
+        if _IS_SELENIUM_3:
+            chrome_kwargs['executable_path'] = chromedriver_path
+        else:
+            # executable_path is deprecated in Selenium 4.1.0 - start using Service() instead.
+            chrome_kwargs['service'] = Service(chromedriver_path)  # Selenium API
 
     return chrome_kwargs
 
