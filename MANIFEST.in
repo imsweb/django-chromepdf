@@ -1,1 +1,2 @@
 recursive-include chromepdf/chromedrivers *
+recursive-include chromepdf/chromesession *
