@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 
 
+## [1.3.1](https://github.com/imsweb/django-chromepdf/tree/1.3.1) - 2022-03-04
+
+**Fixed**
+
+- Fixed file permission issues in Chrome 99+ by storing user data and crash dumps into local folder instead of global folder.
+- Fixed a `ResourceWarning` due to webdriver connections not properly being closed.
+- Fixed a `DeprecationWarning` raised by Selenium 4 changing the way a chromedriver is passed, from `executable_path` to `Service` objects.
+
+
 ## [1.3.0](https://github.com/imsweb/django-chromepdf/tree/1.3.0) - 2021-12-06
 
 **Changed**

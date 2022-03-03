@@ -177,6 +177,15 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     options.add_argument("--log-level=3")  # silence logging
 
+    # store user and crash data locally so that users don't run into permissions issues.
+    # linux default path for crash dumps as of Chrome 99+ is /tmp/Crashpad/
+    # which can cause permission errors on startup if different user created it.
+    chromesession_dir = os.path.join(os.path.dirname(__file__), 'chromesession')
+    user_data_dir = os.path.join(chromesession_dir, 'user-data-dir')
+    crash_dumps_dir = os.path.join(chromesession_dir, 'crash-dumps-dir')
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
+
     # add extra chrome args
     chrome_args = kwargs.get('chrome_args', [])
     for argv in chrome_args:
