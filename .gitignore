@@ -7,8 +7,7 @@
 
 docs/*/
 chromepdf/chromedrivers/chromedriver*
-chromepdf/chromesession/user-data-dir
-chromepdf/chromesession/crash-dumps-dir
+chromepdf/chromesession/users/*/
 
 *.db
 *.log

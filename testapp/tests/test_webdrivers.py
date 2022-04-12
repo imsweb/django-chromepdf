@@ -1,3 +1,4 @@
+import getpass
 import os
 import time
 from unittest.case import TestCase
@@ -28,9 +29,10 @@ class ChromeDriverDownloadTests(TestCase):
 
     def test_chromedriver_args(self):
 
+        username = getpass.getuser()
         chromesession_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'chromepdf', 'chromesession')
-        user_data_dir = os.path.join(chromesession_dir, 'user-data-dir')
-        crash_dumps_dir = os.path.join(chromesession_dir, 'crash-dumps-dir')
+        user_data_dir = os.path.join(chromesession_dir, 'users', username, 'user-data-dir')
+        crash_dumps_dir = os.path.join(chromesession_dir, 'users', username, 'crash-dumps-dir')
         userpatharg1 = f'--user-data-dir={user_data_dir}'
         userpatharg2 = f'--crash-dumps-dir={crash_dumps_dir}'
 

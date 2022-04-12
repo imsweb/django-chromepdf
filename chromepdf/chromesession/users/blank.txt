@@ -1,0 +1,1 @@
+ChromePDF will use this "chromesession/users" folder for user data and crash dumps.

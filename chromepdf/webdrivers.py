@@ -1,3 +1,4 @@
+import getpass
 import io
 import json
 import os
@@ -180,9 +181,18 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
     # store user and crash data locally so that users don't run into permissions issues.
     # linux default path for crash dumps as of Chrome 99+ is /tmp/Crashpad/
     # which can cause permission errors on startup if different user created it.
+    # create a separate subfolder for each user to avoid permissions conflicts.
     chromesession_dir = os.path.join(os.path.dirname(__file__), 'chromesession')
-    user_data_dir = os.path.join(chromesession_dir, 'user-data-dir')
-    crash_dumps_dir = os.path.join(chromesession_dir, 'crash-dumps-dir')
+    try:
+        username = getpass.getuser()
+    except BaseException:
+        username = 'default'
+
+    user_dir = os.path.join(chromesession_dir, 'users', username)
+    if not os.path.exists(user_dir):
+        os.makedirs(user_dir)
+    user_data_dir = os.path.join(user_dir, 'user-data-dir')
+    crash_dumps_dir = os.path.join(user_dir, 'crash-dumps-dir')
     options.add_argument(f"--user-data-dir={user_data_dir}")
     options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
 
