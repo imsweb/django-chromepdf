@@ -11,7 +11,7 @@ from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (_get_chrome_webdriver_kwargs,
                                   _get_chromedriver_download_path,
                                   _get_chromedriver_environment_path,
-                                  devtool_command,
+                                  _get_chromesession_temp_dir, devtool_command,
                                   download_chromedriver_version,
                                   get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import findChromePath
@@ -29,21 +29,25 @@ class ChromeDriverDownloadTests(TestCase):
 
     def test_chromedriver_args(self):
 
-        username = getpass.getuser()
-        chromesession_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'chromepdf', 'chromesession')
-        user_data_dir = os.path.join(chromesession_dir, 'users', username, 'user-data-dir')
-        crash_dumps_dir = os.path.join(chromesession_dir, 'users', username, 'crash-dumps-dir')
+        tempdir = _get_chromesession_temp_dir()
+        user_data_dir = os.path.join(tempdir, 'user-data-dir')
+        crash_dumps_dir = os.path.join(tempdir, 'crash-dumps-dir')
         userpatharg1 = f'--user-data-dir={user_data_dir}'
         userpatharg2 = f'--crash-dumps-dir={crash_dumps_dir}'
 
         # ensure default arguments are passed
         with override_settings(CHROMEPDF={}):
             options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3'])
+
+        # ensure default arguments are passed
+        with override_settings(CHROMEPDF={}):
+            options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
             self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', userpatharg1, userpatharg2])
 
         # ensure extra added argument from CHROME_ARGS is passed
         with override_settings(CHROMEPDF={'CHROME_ARGS': ['--no-sandbox']}):
-            options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
+            options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
             self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', userpatharg1, userpatharg2, "--no-sandbox"])
 
     @override_settings(CHROMEPDF={})

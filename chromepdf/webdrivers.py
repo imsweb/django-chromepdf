@@ -5,6 +5,7 @@ import os
 import platform
 import shutil
 import subprocess
+import uuid
 import zipfile
 from contextlib import contextmanager
 from subprocess import PIPE
@@ -178,23 +179,12 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     options.add_argument("--log-level=3")  # silence logging
 
-    # store user and crash data locally so that users don't run into permissions issues.
-    # linux default path for crash dumps as of Chrome 99+ is /tmp/Crashpad/
-    # which can cause permission errors on startup if different user created it.
-    # create a separate subfolder for each user to avoid permissions conflicts.
-    chromesession_dir = os.path.join(os.path.dirname(__file__), 'chromesession')
-    try:
-        username = getpass.getuser()
-    except BaseException:
-        username = 'default'
-
-    user_dir = os.path.join(chromesession_dir, 'users', username)
-    if not os.path.exists(user_dir):
-        os.makedirs(user_dir)
-    user_data_dir = os.path.join(user_dir, 'user-data-dir')
-    crash_dumps_dir = os.path.join(user_dir, 'crash-dumps-dir')
-    options.add_argument(f"--user-data-dir={user_data_dir}")
-    options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
+    temp_dir = kwargs.get('_chromesession_temp_dir')
+    if temp_dir is not None:
+        user_data_dir = os.path.join(temp_dir, 'user-data-dir')
+        crash_dumps_dir = os.path.join(temp_dir, 'crash-dumps-dir')
+        options.add_argument(f"--user-data-dir={user_data_dir}")
+        options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
 
     # add extra chrome args
     chrome_args = kwargs.get('chrome_args', [])
@@ -242,3 +232,24 @@ def devtool_command(driver, cmd, params={}):
         # when "status" is present, the "value" will contain the error message.
         raise ChromePdfException(response.get('value'))
     return response.get('value')
+
+
+def _get_chromesession_temp_dir():
+    """
+    Return an absolute path to a folder to use for storing Chrome's files while making a PDF.
+
+    This is used to store user and crash data locally so that users don't run into permissions issues.
+    linux default path for crash dumps as of Chrome 99+ is /tmp/Crashpad/
+    which can cause permission errors on startup if different user created it.
+    create a separate subfolder for each user to avoid permissions conflicts.
+    """
+
+    try:
+        username = getpass.getuser()
+    except BaseException:
+        username = 'default'
+    username = f'{username}-{str(uuid.uuid4())}'
+
+    chromesession_dir = os.path.join(os.path.dirname(__file__), 'chromesession')
+    user_dir = os.path.join(chromesession_dir, 'users', username)
+    return user_dir

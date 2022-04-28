@@ -3,6 +3,8 @@ import os
 import pathlib
 import tempfile
 from io import BytesIO
+from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 from unittest.case import TestCase
 from unittest.mock import patch
 
@@ -62,7 +64,7 @@ class GeneratePdfSimpleTests(TestCase):
             with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
 
                 pdfmaker.generate_pdf(html)
-                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', chrome_args=['--no-sandbox'])
+                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfPathTests(TestCase):
@@ -148,7 +150,44 @@ class GeneratePdfUrlSimpleTests(TestCase):
             with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
 
                 pdfmaker.generate_pdf_url('file:///some/file')
-                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', chrome_args=['--no-sandbox'])
+                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
+
+
+class GeneratePdfThreadTests(TestCase):
+
+    @staticmethod
+    def _gen_pdf(num):
+        html = 'One Word'
+        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        _pdfbytes = generate_pdf(html)
+
+    def test_multiprocess(self):
+        """Test two processes trying to create a PDF at the same time."""
+
+        p = Pool()
+        results = []
+        for i in range(3):
+            res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
+            results.append(res)
+            #print(f'started {i}')
+
+        for i, res in enumerate(results):
+            self.assertIsNone(res.get(timeout=10))  # no exception raised?
+            #print(f'got {i}')
+
+    def test_multithread(self):
+        """Test two threads trying to create a PDF at the same time."""
+
+        p = ThreadPool()
+        results = []
+        for i in range(3):
+            res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
+            results.append(res)
+            #print(f'started {i}')
+
+        for i, res in enumerate(results):
+            self.assertIsNone(res.get(timeout=10))  # no exception raised?
+            #print(f'got {i}')
 
 
 class GeneratePdfEncodingTests(TestCase):
