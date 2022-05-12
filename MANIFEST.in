@@ -1,2 +1,3 @@
 recursive-include chromepdf/chromedrivers *
 recursive-include chromepdf/chromesession/users *
+recursive-exclude testapp *

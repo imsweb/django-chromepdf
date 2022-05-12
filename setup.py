@@ -36,7 +36,7 @@ setup(
     author_email='kukwaa@imsweb.com',
     url='https://github.com/imsweb/django-chromepdf',
     license='BSD',
-    packages=find_packages(exclude=('testapp',)),
+    packages=find_packages(exclude=['testapp*']),
     include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
