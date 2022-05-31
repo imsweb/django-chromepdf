@@ -178,6 +178,11 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     options.add_argument("--log-level=3")  # silence logging
 
+    # disables the creation of the crash-dumps-dir.
+    # will work even if --crash-dumps-dir is provided.
+    # keep both as fallbacks. either is preferable to the global default.
+    options.add_argument('--disable-crash-reporter')
+
     # incognito mode lets us run chrome without creating and storing a user profile to disk.
     # this lets us generate PDFs in a thread- and process-safe way since they will not be
     # fighting over reading/writing the same files in the --user-data-dir

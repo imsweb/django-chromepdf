@@ -35,17 +35,17 @@ class ChromeDriverDownloadTests(TestCase):
         # ensure default arguments are passed
         with override_settings(CHROMEPDF={}):
             options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito'])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--disable-crash-reporter', '--incognito'])
 
         # ensure default arguments are passed
         with override_settings(CHROMEPDF={}):
             options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito', userpatharg1])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--disable-crash-reporter', '--incognito', userpatharg1])
 
         # ensure extra added argument from CHROME_ARGS is passed
         with override_settings(CHROMEPDF={'CHROME_ARGS': ['--no-sandbox']}):
             options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito', userpatharg1, "--no-sandbox"])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--disable-crash-reporter', '--incognito', userpatharg1, "--no-sandbox"])
 
     @override_settings(CHROMEPDF={})
     def test_chromedriver_downloads(self):
