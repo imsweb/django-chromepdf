@@ -1,4 +1,3 @@
-import getpass
 import os
 import time
 from unittest.case import TestCase
@@ -30,25 +29,23 @@ class ChromeDriverDownloadTests(TestCase):
     def test_chromedriver_args(self):
 
         tempdir = _get_chromesession_temp_dir()
-        user_data_dir = os.path.join(tempdir, 'user-data-dir')
         crash_dumps_dir = os.path.join(tempdir, 'crash-dumps-dir')
-        userpatharg1 = f'--user-data-dir={user_data_dir}'
-        userpatharg2 = f'--crash-dumps-dir={crash_dumps_dir}'
+        userpatharg1 = f'--crash-dumps-dir={crash_dumps_dir}'
 
         # ensure default arguments are passed
         with override_settings(CHROMEPDF={}):
             options = _get_chrome_webdriver_kwargs(**parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3'])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito'])
 
         # ensure default arguments are passed
         with override_settings(CHROMEPDF={}):
             options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', userpatharg1, userpatharg2])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito', userpatharg1])
 
         # ensure extra added argument from CHROME_ARGS is passed
         with override_settings(CHROMEPDF={'CHROME_ARGS': ['--no-sandbox']}):
             options = _get_chrome_webdriver_kwargs(_chromesession_temp_dir=tempdir, **parse_settings())['options']
-            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', userpatharg1, userpatharg2, "--no-sandbox"])
+            self.assertEqual(options._arguments, ["--headless", '--disable-gpu', '--log-level=3', '--incognito', userpatharg1, "--no-sandbox"])
 
     @override_settings(CHROMEPDF={})
     def test_chromedriver_downloads(self):

@@ -5,7 +5,6 @@ import os
 import platform
 import shutil
 import subprocess
-import uuid
 import zipfile
 from contextlib import contextmanager
 from subprocess import PIPE
@@ -179,11 +178,15 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     options.add_argument("--log-level=3")  # silence logging
 
+    # incognito mode lets us run chrome without creating and storing a user profile to disk.
+    # this lets us generate PDFs in a thread- and process-safe way since they will not be
+    # fighting over reading/writing the same files in the --user-data-dir
+    # passing --incognito AND --user-data-dir= WILL cause the user-data-dir folder to be populated, so don't.
+    options.add_argument(f"--incognito")
+
     temp_dir = kwargs.get('_chromesession_temp_dir')
     if temp_dir is not None:
-        user_data_dir = os.path.join(temp_dir, 'user-data-dir')
         crash_dumps_dir = os.path.join(temp_dir, 'crash-dumps-dir')
-        options.add_argument(f"--user-data-dir={user_data_dir}")
         options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
 
     # add extra chrome args
@@ -248,7 +251,6 @@ def _get_chromesession_temp_dir():
         username = getpass.getuser()
     except BaseException:
         username = 'default'
-    username = f'{username}-{str(uuid.uuid4())}'
 
     chromesession_dir = os.path.join(os.path.dirname(__file__), 'chromesession')
     user_dir = os.path.join(chromesession_dir, 'users', username)

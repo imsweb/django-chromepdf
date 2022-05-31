@@ -1,6 +1,5 @@
 import base64
 import os
-import shutil
 import urllib
 import warnings
 from urllib.parse import urlparse
@@ -24,8 +23,7 @@ class ChromePdfMaker:
         self._chromedriver_downloads = settings['chromedriver_downloads']
         self._chromesession_temp_dir = _get_chromesession_temp_dir()
 
-        if not os.path.exists(self._chromesession_temp_dir):
-            os.makedirs(self._chromesession_temp_dir)
+        os.makedirs(self._chromesession_temp_dir, exist_ok=True)
 
         # download chromedriver if we have chrome, and downloads are enabled
         if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:
@@ -38,11 +36,6 @@ class ChromePdfMaker:
             'chromedriver_path': self._chromedriver_path,
             '_chromesession_temp_dir': self._chromesession_temp_dir,
         }
-
-    def __del__(self):
-        """When ChromePdfMaker is removed, delete the path."""
-        if os.path.exists(self._chromesession_temp_dir):
-            shutil.rmtree(self._chromesession_temp_dir, ignore_errors=True)
 
     def _clean_pdf_kwargs(self, pdf_kwargs):
         """A wrapper around clean_pdf_kwargs() that handles None as well."""
