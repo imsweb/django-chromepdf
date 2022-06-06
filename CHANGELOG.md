@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 
+## [1.3.2](https://github.com/imsweb/django-chromepdf/tree/1.3.2) - 2022-06-06
+
+**Fixed**
+
+- Fixed an issue where multithreading and/or multi-user simultaneous PDF generation could cause stalling due to attempts to write to the same files. Chrome is now launched with the `--incognito` and `--disable-crash-reporter` args to disable creation of files that caused these conflicts.
+
+
 ## [1.3.1](https://github.com/imsweb/django-chromepdf/tree/1.3.1) - 2022-03-04
 
 **Fixed**
