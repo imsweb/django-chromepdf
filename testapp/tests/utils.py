@@ -32,7 +32,7 @@ def findChromePath():
 
     for p in chrome_paths:
         if os.path.exists(p):
-            return p
+            return os.path.abspath(p)  # abs path so OS relies on THE path we want, not on $PATH's precedence.
 
     raise RuntimeError('findChromePath() could not find a Google Chrome instance.')
 
