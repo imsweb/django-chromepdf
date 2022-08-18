@@ -42,10 +42,13 @@ def get_chrome_version(path):
                 version = l.split()[0]
                 return tuple(int(i) for i in version.split('.'))
     else:  # linux, mac can both just use "--version"
-        proc = subprocess.run([path, '--version'], stdout=PIPE, stderr=PIPE)
-        version_stdout = proc.stdout.decode('utf8').strip()  # returns, eg, "Google Chrome 85.0.4183.121"
-        version = [i for i in version_stdout.split() if i[0].isdigit()][0]
-        return tuple(int(i) for i in version.split('.'))
+        try:
+            proc = subprocess.run([path, '--version'], stdout=PIPE, stderr=PIPE)
+            version_stdout = proc.stdout.decode('utf8').strip()  # returns, eg, "Google Chrome 85.0.4183.121"
+            version = [i for i in version_stdout.split() if i[0].isdigit()][0]
+            return tuple(int(i) for i in version.split('.'))
+        except FileNotFoundError:
+            pass  # fall through
 
     raise ChromePdfException(f'Could not determine version of Chrome located at: f{path}')
 

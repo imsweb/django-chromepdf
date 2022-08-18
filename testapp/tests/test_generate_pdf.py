@@ -96,8 +96,9 @@ class GeneratePdfPathTests(TestCase):
 
         chromedriver_path = download_chromedriver_version(get_chrome_version(findChromePath()))
 
+        # no-sandbox needed to work on CI.
         html = 'One Word'
-        pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
+        pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path, chrome_args=['--no-sandbox'])
         self.assertIsInstance(pdfbytes, bytes)
         self.assertEqual(1, extractText(pdfbytes).count(html))
 
