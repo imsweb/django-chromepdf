@@ -29,7 +29,7 @@ if __name__ == "__main__":
         if chrome_path is None:
             raise EnvironmentError('You must have a chrome.exe on your PATH.')
         if chromedriver_path is None:
-            raise EnvironmentError(f'You must have a '{exe_filename}' on your PATH.')
+            raise EnvironmentError(f"You must have a '{exe_filename}' on your PATH.")
 
         chrome_version = get_chrome_version(chrome_path)
         chromedriver_version = subprocess.Popen([exe_filename, '--version'], stdout=subprocess.PIPE).communicate()[0].decode('utf8')
