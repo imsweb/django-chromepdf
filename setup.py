@@ -36,7 +36,7 @@ setup(
     author_email='kukwaa@imsweb.com',
     url='https://github.com/imsweb/django-chromepdf',
     license='BSD',
-    packages=find_packages(exclude=['testapp*']),
+    packages=find_packages(exclude=['testapp', '*testapp*', 'testapp.*']),
     include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -59,4 +59,8 @@ setup(
     install_requires=[
         'selenium<5,>=3'
     ],
+    project_urls={
+        "Source": "https://github.com/imsweb/django-chromepdf/",
+        "Changelog": "https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md/",
+    },
 )
