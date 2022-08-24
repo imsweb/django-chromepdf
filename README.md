@@ -53,7 +53,7 @@ Note: `generate_pdf()` cannot include external files including CSS. You must inc
 from chromepdf import generate_pdf 
 
 with open('myfile.html','r') as f:
-    html = f.read()
+    html_string = f.read()
              
 pdf_kwargs = {
     'paperFormat': 'A4',
@@ -69,10 +69,10 @@ pdf_kwargs = {
         </div>
     ''',
 }
-pdfbytes = generate_pdf(html, pdf_kwargs)
+pdf_bytes = generate_pdf(html_string, pdf_kwargs)
 
 with open('myfile.pdf', 'wb') as file:
-    file.write(pdfbytes)
+    file.write(pdf_bytes)
 ```
 
 ## Django Settings

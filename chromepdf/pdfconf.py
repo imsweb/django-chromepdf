@@ -96,8 +96,8 @@ def clean_pdf_kwargs(**options):
 
     try:
         scale = float(options.get('scale', defaults['scale']))  # can be int or float, or numeric string
-    except ValueError:  # passed a character string?
-        raise TypeError('You must pass a numeric value for the "scale" of the PDF.')
+    except ValueError as ex:  # passed a character string?
+        raise TypeError('You must pass a numeric value for the "scale" of the PDF.') from ex
 
     landscape = bool(options.get('landscape', defaults['landscape']))
 
@@ -110,7 +110,7 @@ def clean_pdf_kwargs(**options):
     paperHeight = defaults['paperHeight']
     if 'paperFormat' in options:  # convenience option that's not part of Chrome's API
         if options['paperFormat'].lower() not in PAPER_FORMATS:
-            raise ValueError('Unrecognized paper format: "%s"' % options['paperFormat'])
+            raise ValueError(f'Unrecognized paper format: "{options["paperFormat"]}"')
         if 'paperWidth' in options or 'paperHeight' in options:
             raise ValueError('Cannot pass a paperFormat at the same time as a paperWidth/paperHeight.')
 
@@ -186,6 +186,7 @@ def clean_pdf_kwargs(**options):
     parameters_keys = set(parameters.keys())
     options_keys = set(options.keys())
     if not options_keys.issubset(parameters_keys):
-        raise ValueError('Unrecognized pdf_kwargs passed to generate_pdf(): %s' % (', '.join(options_keys - parameters_keys)))
+        unrecognized_keys = ', '.join(options_keys - parameters_keys)
+        raise ValueError(f'Unrecognized pdf_kwargs passed to generate_pdf(): {unrecognized_keys}')
 
     return parameters

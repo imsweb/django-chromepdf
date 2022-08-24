@@ -5,8 +5,9 @@ pdfminer.six==20211012
 Django~=3.2.9
 
 # For code cleanup
-autopep8~=1.4.4 # License: MIT
-isort~=4.3.21 # License: MIT
+autopep8==1.4.4
+isort==5.6.4 
+pylint==2.13.7
 
 # For code coverage tests
 coverage

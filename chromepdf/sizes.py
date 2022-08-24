@@ -44,18 +44,18 @@ def convert_to_inches(size):
         format_str = size[-UNIT_STR_LENGTH:].lower()  # EG "2.5in" => "in"
         # invalid unit type?
         if format_str not in UNITS_PER_INCH:
-            raise ValueError('generate_pdf() cannot understand a length value of: "%s"' % str(size))
+            raise ValueError(f'generate_pdf() cannot understand a length value of: "{size}"')
         # if this contains any whitespace, raise value error (not valid CSS)
         if any(c in string.whitespace for c in format_num):
-            raise ValueError('generate_pdf() cannot understand a length value of: "%s"' % str(size))
+            raise ValueError(f'generate_pdf() cannot understand a length value of: "{size}"')
         try:
             value = float(format_num)
 
             return value / UNITS_PER_INCH[format_str]  # convert to inches
-        except ValueError:
-            raise ValueError('generate_pdf() cannot understand a length value of: "%s"' % str(size))
+        except ValueError as ex:
+            raise ValueError(f'generate_pdf() cannot understand a length value of: "{size}"') from ex
     else:
-        raise ValueError('generate_pdf() cannot understand a length value of: "%s"' % str(size))
+        raise ValueError(f'generate_pdf() cannot understand a length value of: "{size}"')
 
 
 def convert_to_unit(size, unit):
