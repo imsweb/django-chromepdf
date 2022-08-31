@@ -18,6 +18,7 @@ if __name__ == "__main__":
     # TODO: Create a TestRunner subclass for this later.
     if 'test' in sys.argv:
         import shutil
+
         from chromepdf.webdrivers import get_chrome_version
         from testapp.tests.utils import findChromePath
 
@@ -40,5 +41,12 @@ if __name__ == "__main__":
             raise EnvironmentError(f'Your PATH chromedriver version does not match your default chrome version: Chrome={chrome_version[0]}, Chromedriver={chromedriver_version[0]} (located at "{chromedriver_path}"). Make sure these match before running your tests.')
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")
+
+    if 'entrypoint' in sys.argv:
+        print('Running entry point...')
+        from chromepdf.commandline import command_line_interface
+        command_line_interface(sys.argv[2:])
+        exit()
+
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)

@@ -8,7 +8,7 @@ _GITHUB_MASTER_ROOT = 'https://github.com/imsweb/django-chromepdf/blob/master/'
 
 def get_version():
     """Return the version string stored at chromepdf.__version__"""
-    with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py')) as fp:
+    with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py'), encoding='utf8') as fp:
         return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)  # @UndefinedVariable
 
 
@@ -17,7 +17,7 @@ def get_long_description():
     Return a long description consisting of the readme's contents.
     The contents are Markdown, so be sure to set the "long_description_content_type" accordingly.
     """
-    with open(os.path.join(os.path.dirname(__file__), 'README.md')) as fp:
+    with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf8') as fp:
         contents = fp.read()
         # expand relative girhub urls to absolute. this will match EVERY url in the document.
         contents = re.sub(r'\[(.+?)\]\((.+?)\)', r'[\1](%s\2)' % _GITHUB_MASTER_ROOT, contents)
@@ -54,6 +54,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     python_requires='~=3.6',
     install_requires=[
