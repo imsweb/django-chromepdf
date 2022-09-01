@@ -94,7 +94,7 @@ Keyword Arguments for command-line usage are almost identical to `generate_pdf()
 ```
 The recommended usage is to pass a `--chrome-path`, and let ChromePDF handle the chromedriver downloads automatically.
 ```
-python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome/ path/to/file.html path/to/output.pdf
+python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome path/to/file.html path/to/output.pdf
 ```
 
 ## Django Settings
