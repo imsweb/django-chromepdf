@@ -22,9 +22,9 @@ Official ChromePDF releases [are available on PyPI](https://pypi.org/project/dja
 
 The latest version can be installed via PyPI. This will also install Selenium, the only direct dependency (Selenium versions 3 and 4 are supported; 3 will be used if already present, otherwise will install 4). 
 
-You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes. ChromePDF uses [semantic versioning](https://semver.org/) for its release numbering. To ensure backwards compatibility and receive bug fixes, you are encouraged to pin your requirements to a Major.Minor version like so:
+You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes. ChromePDF uses [semantic versioning](https://semver.org/) for its release numbering. You are encouraged to pin your requirements to a Major.Minor version in a manner that will also receive Bugfix updates like so:
 ```
-pip install django-chromepdf~=1.3.2
+pip install django-chromepdf~=1.4.0
 ```
 
 **2. Set the location of your Chrome executable.** This can be done in one of two ways:
@@ -76,7 +76,7 @@ with open('myfile.pdf', 'wb') as file:
 ```
 
 ## Example: Command-Line Usage
-ChromePDF can generate PDFs from the command-line. This method will not rely on Django settings. Example Syntax:
+ChromePDF can generate PDFs from the command-line. This method will not rely on Django settings. Example syntax:
 ```
 # Convert file.html into file.pdf and place in the same directory
 python -m chromepdf generate-pdf path/to/file.html [kwargs]
@@ -84,12 +84,12 @@ python -m chromepdf generate-pdf path/to/file.html [kwargs]
 # Convert file.html and place the output PDF file at a specific path.
 python -m chromepdf generate-pdf path/to/file.html path/to/output.pdf [kwargs]
 ```
-Keyword Arguments for command-line usage are almost identical to `generate_pdf()` keyword arguments:
+Keyword arguments for command-line usage are almost identical to `generate_pdf()` keyword arguments:
 ```
 --chrome-path=path/to/google-chrome
 --chromedriver-path=path/to/chromedriver
 --chromedriver-downloads=0 # 0 or 1
---chrome-args="--arg1 --arg2"
+--chrome-args="--arg1 --arg2" # Always use quotes to avoid misinterpreting as commands. 
 --pdf-kwargs-json=path/to/file.json # JSON file containing a dict of values to pass to pdf_kwargs
 ```
 The recommended usage is to pass a `--chrome-path`, and let ChromePDF handle the chromedriver downloads automatically.

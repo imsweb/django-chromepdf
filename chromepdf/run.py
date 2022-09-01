@@ -53,7 +53,7 @@ def chromepdf_run(*args):
         if namespace.chromedriver_downloads is not None:
             kwargs['chromedriver_downloads'] = bool(namespace.chromedriver_downloads)
         if namespace.chrome_args is not None:
-            kwargs['chrome_args'] = namespace.chrome_args.split()
+            kwargs['chrome_args'] = namespace.chrome_args.strip().split()
 
         pdf_kwargs = None
         if namespace.pdf_kwargs_json is not None:

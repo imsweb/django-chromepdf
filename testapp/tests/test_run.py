@@ -31,6 +31,14 @@ class CommandLineTests(TestCase):
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(2, proc.returncode)
 
+    def test_generate_pdf_error_bad_subcommand(self):
+        """Should display an error if an unfamiliar subcommand is given"""
+
+        proc = subprocess.run(['python', '-m', 'chromepdf', 'bad-subcommand'], capture_output=True)  # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertIn('error: argument command: invalid choice:', proc.stderr.decode('utf8'))  # dispalys help text?
+        self.assertEqual(2, proc.returncode)
+
     def test_generate_pdf_error_no_args(self):
         """Should display an error about the subcommand 'generate-pdf'"""
 
@@ -141,14 +149,14 @@ class CommandLineTests(TestCase):
 
         chrome_path = findChromePath()
         chromedriver_path = _get_chromedriver_environment_path()
-        chrome_args_list = ['--no-sandbox']
+        chrome_args_list = ['--no-sandbox', '--null']
         chrome_args = ' '.join(chrome_args_list)
         pdf_kwargs = {'margin': 1, 'marginLeft': '1in'}
         pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
         with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
             f.write(json.dumps(pdf_kwargs))
 
-        args = [
+        args_original = [
             'python',
             '-m',
             'chromepdf',
@@ -158,34 +166,54 @@ class CommandLineTests(TestCase):
             f'--chrome-path={chrome_path}',
             f'--chromedriver-path={chromedriver_path}',
             '--chromedriver-downloads=1',
-            f'--chrome-args={chrome_args}',
+            f'--chrome-args={chrome_args}',  # should still work even with spaces
             f'--pdf-kwargs-json={pdf_kwargs_json_path}',
         ]
-        # print(args)
-        proc = subprocess.run(args, capture_output=True)   # pylint: disable=subprocess-run-check
-        # print(proc.stdout)
-        # print(proc.stderr)
-        self.assertEqual(b'', proc.stdout)
-        self.assertEqual(b'', proc.stderr)
-        self.assertEqual(0, proc.returncode)
+        # alternate args:
+        # kwargs before args
+        # reverse order
+        # uses "--key value" instead of "--key=value", both are valid under Python's argparse
+        args_alternate = [
+            'python',
+            '-m',
+            'chromepdf',
+            'generate-pdf',
+            '--pdf-kwargs-json', pdf_kwargs_json_path,
+            '--chrome-args', f'{chrome_args}',
+            '--chromedriver-downloads', '1',
+            '--chromedriver-path', chromedriver_path,
+            '--chrome-path', chrome_path,
+            inpath,
+            outpath,
+        ]
 
-        self.assertTrue(os.path.exists(outpath))
-        with open(outpath, 'rb') as f:
-            pdf_bytes = f.read()
+        arg_list = [args_original, args_alternate]
 
-        self.assertEqual(1, extractText(pdf_bytes).count(html))
+        for args in arg_list:
+            with self.subTest(args=args):
 
-        # ensure all parameters got through
+                proc = subprocess.run(args, capture_output=True)   # pylint: disable=subprocess-run-check
+                self.assertEqual(b'', proc.stdout)
+                self.assertEqual(b'', proc.stderr)
+                self.assertEqual(0, proc.returncode)
 
-        with mock.patch('chromepdf.shortcuts.generate_pdf') as m:
-            m.return_value = b'12345'
-            chromepdf_run(args[3:])
+                self.assertTrue(os.path.exists(outpath))
+                with open(outpath, 'rb') as f:
+                    pdf_bytes = f.read()
+                os.remove(outpath)
 
-        m.assert_called_with(
-            html,
-            pdf_kwargs,
-            chrome_path=chrome_path,
-            chromedriver_path=chromedriver_path,
-            chromedriver_downloads=True,
-            chrome_args=chrome_args_list,
-        )
+                self.assertEqual(1, extractText(pdf_bytes).count(html))
+
+                # ensure all parameters got through
+                with mock.patch('chromepdf.shortcuts.generate_pdf') as m:
+                    m.return_value = b'12345'
+                    chromepdf_run(args[3:])
+
+                m.assert_called_with(
+                    html,
+                    pdf_kwargs,
+                    chrome_path=chrome_path,
+                    chromedriver_path=chromedriver_path,
+                    chromedriver_downloads=True,
+                    chrome_args=chrome_args_list,
+                )
