@@ -96,6 +96,7 @@ The recommended usage is to pass a `--chrome-path`, and let ChromePDF handle the
 ```
 python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome path/to/file.html path/to/output.pdf
 ```
+The command will have a return code of zero on success, and nonzero on failure.
 
 ## Django Settings
 

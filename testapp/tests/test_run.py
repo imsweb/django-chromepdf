@@ -74,7 +74,7 @@ class CommandLineTests(TestCase):
         """Generate a PDF where only the inpath is provided."""
 
         html = 'One Word'
-        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')  # ensure outfile is named "input.rev1.pdf" (keeps "rev1")
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath], capture_output=True)   # pylint: disable=subprocess-run-check
@@ -115,6 +115,26 @@ class CommandLineTests(TestCase):
             os.remove(inpath)
         if os.path.exists(outpath):
             os.remove(outpath)
+
+    def test_generate_exception(self):
+        """Generate a PDF where an invalid argument causes generate_pdf() to fail."""
+
+        html = 'One Word'
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
+        pdf_kwargs = {'marginWrong': '1in'}  # this is not a valid pdf_kwargs setting. PDF generation should fail.
+        pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
+        with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
+            f.write(json.dumps(pdf_kwargs))
+
+        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'], capture_output=True)   # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertTrue(b'ValueError: Unrecognized pdf_kwargs passed to generate_pdf()' in proc.stderr)
+        self.assertEqual(1, proc.returncode)
+
+        outpath = inpath.replace('.html', '.pdf')
+        self.assertFalse(os.path.exists(outpath))
 
     def test_generate_pdf_inpath_outpath(self):
         """Generate a PDF where the inpath AND outpath are provided."""
