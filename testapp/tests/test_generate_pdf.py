@@ -1,14 +1,12 @@
 import json
 import os
 import pathlib
-import tempfile
 from io import BytesIO
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 from unittest.case import TestCase
 from unittest.mock import patch
 
-from django.conf import settings  # @UnusedImport
 from django.test.utils import override_settings
 from pikepdf import Pdf
 
@@ -253,7 +251,7 @@ class PdfPageSizeTests(TestCase):
 
     @override_settings(CHROMEPDF={})
     def test_default_size(self):
-        ""
+        "Test the default size of generated PDF files."
 
         from chromepdf import \
             generate_pdf  # top-level, not via chromepdf.shortcuts
@@ -265,7 +263,7 @@ class PdfPageSizeTests(TestCase):
 
     @override_settings(CHROMEPDF={})
     def test_default_size_landscape(self):
-        ""
+        "Test the default size of generated PDF files in landscape mode."
 
         from chromepdf import \
             generate_pdf  # top-level, not via chromepdf.shortcuts
@@ -277,8 +275,8 @@ class PdfPageSizeTests(TestCase):
         self.assertPageSizeInInches(pdfbytes, (11, 8.5))
 
     @override_settings(CHROMEPDF={})
-    def test_papersize_override(self):
-        ""
+    def test_paperformat_override(self):
+        "Test the effect of a paperFormat override on the generated PDF file's size."
 
         from chromepdf import \
             generate_pdf  # top-level, not via chromepdf.shortcuts
@@ -288,8 +286,8 @@ class PdfPageSizeTests(TestCase):
         self.assertPageSizeInInches(pdfbytes, (8.26, 11.69))
 
     @override_settings(CHROMEPDF={})
-    def test_papersize_override_landscape(self):
-        ""
+    def test_paperformat_override_landscape(self):
+        "Test the effect of a paperFormat override on the generated PDF file's size when in landscape mode."
 
         from chromepdf import \
             generate_pdf  # top-level, not via chromepdf.shortcuts

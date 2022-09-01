@@ -63,7 +63,6 @@ def createTempFile(file_bytes):
 
     if isinstance(file_bytes, str):
         file_bytes = file_bytes.encode('utf8')
-    temp = tempfile.NamedTemporaryFile(delete=False)
-    temp.write(file_bytes)  # 10 bytes
-    temp.close()  # close it, so it can be copied from for opens
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        temp.write(file_bytes)
     return temp

@@ -23,12 +23,12 @@ class ChromePdfPyPITests(TestCase):
 
         # readme contents make sense?
         readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'README.md')
-        with open(readme_path, 'r') as f:
+        with open(readme_path, 'r', encoding='utf8') as f:
             readme_contents = f.read()
         self.assertGreater(len(readme_contents), 1)
 
         # setup has correct long description?
-        from setup import get_long_description, _GITHUB_MASTER_ROOT
+        from setup import _GITHUB_MASTER_ROOT, get_long_description
         setup_long_description = get_long_description()
         # relative github urls were expanded to absolute github urls for display on pypi? otherwise they would not work.
         self.assertIn(f'{_GITHUB_MASTER_ROOT}CHANGELOG.md', setup_long_description)

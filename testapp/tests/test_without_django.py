@@ -1,6 +1,5 @@
 import os
 import pathlib
-import tempfile
 from unittest import mock
 from unittest.case import TestCase
 
@@ -48,7 +47,7 @@ class TestWithoutDjangoTests(TestCase):
                     continue
 
                 path = os.path.join(dirpath, name)
-                with open(path, 'r') as f:
+                with open(path, 'r', encoding='utf8') as f:
                     contents = f.read()
                     total_count += contents.count('django')
                     #total_files += 1
@@ -76,7 +75,8 @@ class TestWithoutDjangoTests(TestCase):
     def test_generate_pdf_without_django(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         pdfbytes = generate_pdf(html)
@@ -85,7 +85,8 @@ class TestWithoutDjangoTests(TestCase):
     def test_generate_pdf_url_without_django(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function."""
 
-        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         html = "This is a test"
         try:
