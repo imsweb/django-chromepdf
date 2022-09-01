@@ -27,7 +27,8 @@ class GeneratePdfSimpleTests(TestCase):
     def test_generate_pdf(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         pdfbytes = generate_pdf(html)
@@ -73,7 +74,8 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chrome_path_success(self):
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         pdfbytes = generate_pdf(html, chrome_path=findChromePath())
@@ -83,7 +85,8 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chrome_path_failure(self):
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         with self.assertRaises(ChromePdfException):
@@ -92,7 +95,8 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chromedriver_path_success(self):
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         chromedriver_path = download_chromedriver_version(get_chrome_version(findChromePath()))
 
@@ -105,7 +109,8 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chromedriver_path_failure(self):
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         with self.assertRaises(ChromePdfException):
@@ -118,7 +123,8 @@ class GeneratePdfUrlSimpleTests(TestCase):
     def test_generate_pdf_url(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function."""
 
-        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         html = "This is a test"
         extracted_text = ''
@@ -137,7 +143,8 @@ class GeneratePdfUrlSimpleTests(TestCase):
     def test_generate_pdf_url_bad_file_uri(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function, with a bad file URI."""
 
-        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         with self.assertRaises(ValueError):
             _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
@@ -159,36 +166,37 @@ class GeneratePdfThreadTests(TestCase):
     @staticmethod
     def _gen_pdf(num):
         html = 'One Word'
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
         _pdfbytes = generate_pdf(html)
 
     def test_multiprocess(self):
         """Test two processes trying to create a PDF at the same time."""
 
-        p = Pool()
-        results = []
-        for i in range(3):
-            res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
-            results.append(res)
-            #print(f'started {i}')
+        with Pool() as p:
+            results = []
+            for i in range(3):
+                res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
+                results.append(res)
+                #print(f'started {i}')
 
-        for i, res in enumerate(results):
-            self.assertIsNone(res.get(timeout=10))  # no exception raised?
-            #print(f'got {i}')
+            for i, res in enumerate(results):
+                self.assertIsNone(res.get(timeout=10))  # no exception raised?
+                #print(f'got {i}')
 
     def test_multithread(self):
         """Test two threads trying to create a PDF at the same time."""
 
-        p = ThreadPool()
-        results = []
-        for i in range(3):
-            res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
-            results.append(res)
-            #print(f'started {i}')
+        with ThreadPool() as p:
+            results = []
+            for i in range(3):
+                res = p.apply_async(GeneratePdfThreadTests._gen_pdf, args=(i,))
+                results.append(res)
+                #print(f'started {i}')
 
-        for i, res in enumerate(results):
-            self.assertIsNone(res.get(timeout=10))  # no exception raised?
-            #print(f'got {i}')
+            for i, res in enumerate(results):
+                self.assertIsNone(res.get(timeout=10))  # no exception raised?
+                #print(f'got {i}')
 
 
 class GeneratePdfEncodingTests(TestCase):
@@ -202,7 +210,8 @@ class GeneratePdfEncodingTests(TestCase):
         Also, the Javascript escape character for multi-line strings (due to us using it in document.write(`{}`))
         """
 
-        from chromepdf import generate_pdf, generate_pdf_url  # top-level, not via chromepdf.shortcuts
+        from chromepdf import (  # top-level, not via chromepdf.shortcuts
+            generate_pdf, generate_pdf_url)
 
         html = 'Unicode Char: \u0394 Javascript escape character: ` Some quotes: "\''
 
@@ -246,7 +255,8 @@ class PdfPageSizeTests(TestCase):
     def test_default_size(self):
         ""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
         html = ''
         pdfbytes = generate_pdf(html)
 
@@ -257,7 +267,8 @@ class PdfPageSizeTests(TestCase):
     def test_default_size_landscape(self):
         ""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'landscape': True})
@@ -269,7 +280,8 @@ class PdfPageSizeTests(TestCase):
     def test_papersize_override(self):
         ""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'paperFormat': 'A4'})
@@ -279,7 +291,8 @@ class PdfPageSizeTests(TestCase):
     def test_papersize_override_landscape(self):
         ""
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'paperFormat': 'A4', 'landscape': True})
@@ -289,7 +302,8 @@ class PdfPageSizeTests(TestCase):
     def test_scale(self):
         "Scale should affect text size, NOT the paper size."
 
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
+        from chromepdf import \
+            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'scale': 2})

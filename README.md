@@ -75,6 +75,28 @@ with open('myfile.pdf', 'wb') as file:
     file.write(pdf_bytes)
 ```
 
+## Example: Command-Line Usage
+ChromePDF can generate PDFs from the command-line. This method will not rely on Django settings. Example Syntax:
+```
+# Convert file.html into file.pdf and place in the same directory
+python -m chromepdf generate-pdf path/to/file.html [kwargs]
+
+# Convert file.html and place the output PDF file at a specific path.
+python -m chromepdf generate-pdf path/to/file.html path/to/output.pdf [kwargs]
+```
+Keyword Arguments for command-line usage are almost identical to `generate_pdf()` keyword arguments:
+```
+--chrome-path=path/to/google-chrome
+--chromedriver-path=path/to/chromedriver
+--chromedriver-downloads=0 # 0 or 1
+--chrome-args="--arg1 --arg2"
+--pdf-kwargs-json=path/to/file.json # JSON file containing a dict of values to pass to pdf_kwargs
+```
+The recommended usage is to pass a `--chrome-path`, and let ChromePDF handle the chromedriver downloads automatically.
+```
+python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome/ path/to/file.html path/to/output.pdf
+```
+
 ## Django Settings
 
 You can specify default settings in your Django settings file, if desired, via a `CHROMEPDF` settings. Anything passed via the `pdf_kwargs` argument will override the `PDF_KWARGS` settings.

@@ -72,7 +72,7 @@ def chromepdf_run(*args):
         from .shortcuts import generate_pdf
         pdf_bytes = generate_pdf(html_str, pdf_kwargs, **kwargs)
         outpath_dir = os.path.dirname(outpath)
-        if outpath_dir:  # if not cwd ('')
+        if outpath_dir:  # makedirs() will fail if we try passing the current dir via "", so don't.
             os.makedirs(outpath_dir, exist_ok=True)
         with open(outpath, 'wb') as f:
             f.write(pdf_bytes)
