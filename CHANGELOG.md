@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 
+## [1.4.0](https://github.com/imsweb/django-chromepdf/tree/1.4.0) - 2022-09-02
+
+**Added**
+
+- Added a command-line API for generating PDFs. See the new section in the readme for more information.
+
+
 ## [1.3.2](https://github.com/imsweb/django-chromepdf/tree/1.3.2) - 2022-06-06
 
 **Fixed**

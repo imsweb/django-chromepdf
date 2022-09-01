@@ -16,7 +16,9 @@ def get_chromepdf_settings_dict():
     try:
         from django.conf import settings
         return getattr(settings, 'CHROMEPDF', {})
-    except (ImportError, ModuleNotFoundError):
+    except Exception:
+        # catches ImportError and ModuleNotFoundError, and potentially Django's ImproperlyConfigured.
+        # But we can't explitly name that here since Django might not be installed. So, use a general Exception.
         return {}
 
 
