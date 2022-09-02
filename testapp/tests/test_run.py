@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from unittest import mock
 from unittest.case import TestCase
 
@@ -10,6 +11,9 @@ from django.conf import settings
 from chromepdf.run import chromepdf_run
 from chromepdf.webdrivers import _get_chromedriver_environment_path
 from testapp.tests.utils import extractText, findChromePath
+
+# whichever python exe is running the tests, use the same one to run the commands.
+PY_EXE = sys.executable
 
 
 def subprocess_run(*args, **kwargs):
@@ -34,7 +38,7 @@ class CommandLineTests(TestCase):
     def test_run_no_args(self):
         """Should display help text"""
 
-        proc = subprocess_run(['python', '-m', 'chromepdf'])  # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf'])  # pylint: disable=subprocess-run-check
         self.assertIn('usage:', proc.stdout.decode('utf8'))  # dispalys help text?
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(2, proc.returncode)
@@ -42,7 +46,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_error_bad_subcommand(self):
         """Should display an error if an unfamiliar subcommand is given"""
 
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'bad-subcommand'])  # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'bad-subcommand'])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('error: argument command: invalid choice:', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -50,7 +54,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_error_no_args(self):
         """Should display an error about the subcommand 'generate-pdf'"""
 
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf'])  # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf'])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: requires one or two path arguments', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -63,7 +67,7 @@ class CommandLineTests(TestCase):
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
 
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, inpath, inpath])  # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, inpath, inpath])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: requires one or two path arguments', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -73,7 +77,7 @@ class CommandLineTests(TestCase):
 
         inpath = os.path.join(settings.TEMP_DIR, 'file-not-found.html')
 
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])  # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: could not find input html file: ', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -85,7 +89,7 @@ class CommandLineTests(TestCase):
         inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')  # ensure outfile is named "input.rev1.pdf" (keeps "rev1")
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -107,7 +111,7 @@ class CommandLineTests(TestCase):
         inpath = os.path.join('input.rev2.html')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -136,7 +140,7 @@ class CommandLineTests(TestCase):
         with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
             f.write(json.dumps(pdf_kwargs))
 
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertTrue(b'ValueError: Unrecognized pdf_kwargs passed to generate_pdf()' in proc.stderr)
         self.assertEqual(1, proc.returncode)
@@ -152,7 +156,7 @@ class CommandLineTests(TestCase):
         outpath = os.path.join(settings.TEMP_DIR, 'output.pdf')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, outpath])   # pylint: disable=subprocess-run-check
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, outpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -185,7 +189,7 @@ class CommandLineTests(TestCase):
             f.write(json.dumps(pdf_kwargs))
 
         args_original = [
-            'python',
+            PY_EXE,
             '-m',
             'chromepdf',
             'generate-pdf',
@@ -202,7 +206,7 @@ class CommandLineTests(TestCase):
         # reverse order
         # uses "--key value" instead of "--key=value", both are valid under Python's argparse
         args_alternate = [
-            'python',
+            PY_EXE,
             '-m',
             'chromepdf',
             'generate-pdf',
