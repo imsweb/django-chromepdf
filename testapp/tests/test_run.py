@@ -36,12 +36,20 @@ class CommandLineTests(TestCase):
         shutil.rmtree(settings.TEMP_DIR)
 
     def test_run_no_args(self):
-        """Should display help text"""
+        """Should display help text with error returncode"""
 
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf'])  # pylint: disable=subprocess-run-check
         self.assertIn('usage:', proc.stdout.decode('utf8'))  # dispalys help text?
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(2, proc.returncode)
+
+    def test_run_help(self):
+        """Should display help text without error returncode"""
+
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', '--help'])  # pylint: disable=subprocess-run-check
+        self.assertIn('usage:', proc.stdout.decode('utf8'))  # dispalys help text?
+        self.assertEqual(b'', proc.stderr)
+        self.assertEqual(0, proc.returncode)
 
     def test_generate_pdf_error_bad_subcommand(self):
         """Should display an error if an unfamiliar subcommand is given"""
