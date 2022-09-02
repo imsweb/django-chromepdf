@@ -14,6 +14,21 @@ if __name__ == "__main__":
     # print(githooks_path)
     subprocess.call(['git', 'config', 'core.hooksPath', githooks_path], cwd=cwd)
 
+    # easy way to download a chromedriver into current working dir, needed for unit tests.
+    if 'getchromedriver' in sys.argv:
+        from testapp.tests.utils import findChromePath
+        chrome_path = findChromePath()
+        if chrome_path is None:
+            raise EnvironmentError('You must have a chrome.exe on your PATH.')
+        from chromepdf.webdrivers import (download_chromedriver_version,
+                                          get_chrome_version)
+        version = get_chrome_version(chrome_path)
+        path = download_chromedriver_version(version)
+        if os.path.exists('chromedriver.exe'):
+            os.remove('chromedriver.exe')
+        os.rename(path, 'chromedriver.exe')
+        exit(0)
+
     # do some checks so environment tests will pass.
     # TODO: Create a TestRunner subclass for this later.
     if 'test' in sys.argv:
@@ -30,7 +45,7 @@ if __name__ == "__main__":
         if chrome_path is None:
             raise EnvironmentError('You must have a chrome.exe on your PATH.')
         if chromedriver_path is None:
-            raise EnvironmentError(f"You must have a '{exe_filename}' on your PATH.")
+            raise EnvironmentError(f"You must have a '{exe_filename}' on your PATH. Run manage.py getchromedriver to fetch one.")
 
         chrome_version = get_chrome_version(chrome_path)
         chromedriver_version = subprocess.Popen([exe_filename, '--version'], stdout=subprocess.PIPE).communicate()[0].decode('utf8')
@@ -44,7 +59,7 @@ if __name__ == "__main__":
 
     if 'entrypoint' in sys.argv:
         print('Running entry point...')
-        from chromepdf.commandline import command_line_interface
+        from chromepdf.run import chromepdf_run
         command_line_interface(sys.argv[2:])
         exit()
 

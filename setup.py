@@ -19,7 +19,7 @@ def get_long_description():
     """
     with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf8') as fp:
         contents = fp.read()
-        # expand relative girhub urls to absolute. this will match EVERY url in the document.
+        # expand relative github urls to absolute. this will match EVERY url in the document.
         contents = re.sub(r'\[(.+?)\]\((.+?)\)', r'[\1](%s\2)' % _GITHUB_MASTER_ROOT, contents)
         # un-expand urls that were already absolute.
         contents = contents.replace(f'{_GITHUB_MASTER_ROOT}https://', 'https://')

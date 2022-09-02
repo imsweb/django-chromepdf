@@ -12,6 +12,14 @@ from chromepdf.webdrivers import _get_chromedriver_environment_path
 from testapp.tests.utils import extractText, findChromePath
 
 
+def subprocess_run(*args, **kwargs):
+    """
+    Subprocess run shortcut that works in Python 3.6 (doesn't support capture_output=True)
+    """
+    p = subprocess.run(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)  # pylint: disable=subprocess-run-check)
+    return p
+
+
 class CommandLineTests(TestCase):
     """Test generating PDFs via the command line."""
 
@@ -26,7 +34,7 @@ class CommandLineTests(TestCase):
     def test_run_no_args(self):
         """Should display help text"""
 
-        proc = subprocess.run(['python', '-m', 'chromepdf'], capture_output=True)  # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf'])  # pylint: disable=subprocess-run-check
         self.assertIn('usage:', proc.stdout.decode('utf8'))  # dispalys help text?
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(2, proc.returncode)
@@ -34,7 +42,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_error_bad_subcommand(self):
         """Should display an error if an unfamiliar subcommand is given"""
 
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'bad-subcommand'], capture_output=True)  # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'bad-subcommand'])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('error: argument command: invalid choice:', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -42,7 +50,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_error_no_args(self):
         """Should display an error about the subcommand 'generate-pdf'"""
 
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf'], capture_output=True)  # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf'])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: requires one or two path arguments', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -55,7 +63,7 @@ class CommandLineTests(TestCase):
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
 
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, inpath, inpath], capture_output=True)  # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, inpath, inpath])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: requires one or two path arguments', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -65,7 +73,7 @@ class CommandLineTests(TestCase):
 
         inpath = os.path.join(settings.TEMP_DIR, 'file-not-found.html')
 
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath], capture_output=True)  # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('generate-pdf: could not find input html file: ', proc.stderr.decode('utf8'))  # dispalys help text?
         self.assertEqual(2, proc.returncode)
@@ -77,7 +85,7 @@ class CommandLineTests(TestCase):
         inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')  # ensure outfile is named "input.rev1.pdf" (keeps "rev1")
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath], capture_output=True)   # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -99,7 +107,7 @@ class CommandLineTests(TestCase):
         inpath = os.path.join('input.rev2.html')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath], capture_output=True)   # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -128,7 +136,7 @@ class CommandLineTests(TestCase):
         with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
             f.write(json.dumps(pdf_kwargs))
 
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'], capture_output=True)   # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertTrue(b'ValueError: Unrecognized pdf_kwargs passed to generate_pdf()' in proc.stderr)
         self.assertEqual(1, proc.returncode)
@@ -144,7 +152,7 @@ class CommandLineTests(TestCase):
         outpath = os.path.join(settings.TEMP_DIR, 'output.pdf')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
-        proc = subprocess.run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, outpath], capture_output=True)   # pylint: disable=subprocess-run-check
+        proc = subprocess_run(['python', '-m', 'chromepdf', 'generate-pdf', inpath, outpath])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
@@ -212,7 +220,7 @@ class CommandLineTests(TestCase):
         for args in arg_list:
             with self.subTest(args=args):
 
-                proc = subprocess.run(args, capture_output=True)   # pylint: disable=subprocess-run-check
+                proc = subprocess_run(args)   # pylint: disable=subprocess-run-check
                 self.assertEqual(b'', proc.stdout)
                 self.assertEqual(b'', proc.stderr)
                 self.assertEqual(0, proc.returncode)
