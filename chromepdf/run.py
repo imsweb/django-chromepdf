@@ -64,9 +64,9 @@ def chromepdf_run(args):
                     data = f.read()
                     pdf_kwargs = json.loads(data)
                 if not isinstance(pdf_kwargs, dict):
-                    parser.error('--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string')
+                    parser.error('--pdf-kwargs-json: must be a path to a file containing a JSON dict {} of key-value pairs. The JSON in this file is a different data type.')
             except json.JSONDecodeError:
-                parser.error('--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string')
+                parser.error('--pdf-kwargs-json: must be a path to a file containing a JSON dict {} of key-value pairs. The JSON in this file is not valid JSON.')
 
         from .shortcuts import generate_pdf
         pdf_bytes = generate_pdf(html_str, pdf_kwargs, **kwargs)

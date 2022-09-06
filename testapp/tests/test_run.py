@@ -216,7 +216,7 @@ class CommandLineTests(TestCase):
 
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
-        self.assertIn(b'--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string', proc.stderr)
+        self.assertIn(b'--pdf-kwargs-json: must be a path to a file containing a JSON dict {} of key-value pairs. The JSON in this file is not valid JSON.', proc.stderr)
         self.assertEqual(2, proc.returncode)
         self.assertFalse(os.path.exists(outpath))
 
@@ -239,7 +239,7 @@ class CommandLineTests(TestCase):
 
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
-        self.assertIn(b'--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string', proc.stderr)
+        self.assertIn(b'--pdf-kwargs-json: must be a path to a file containing a JSON dict {} of key-value pairs. The JSON in this file is a different data type.', proc.stderr)
         self.assertEqual(2, proc.returncode)
         self.assertFalse(os.path.exists(outpath))
 
