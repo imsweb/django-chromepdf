@@ -1,5 +1,5 @@
 
-def chromepdf_run(*args):
+def chromepdf_run(args):
     """
     A method of generating PDF files from the command line. To execute, run:
     > python -m chromepdf generate-pdf [args] [kwargs]
@@ -13,17 +13,17 @@ def chromepdf_run(*args):
 
     # For now, we only have one sub-command: generatepdf.
     # Other sub-commands may be added in the future
-    genpdf_parser = subparsers.add_parser('generate-pdf', help='Will generate a PDF file. Followed by one or two args: The part to the input HTML file, and path to the output PDF file. EG: "--generate-pdf path/to/file.html path/to/file.pdf"')
+    genpdf_parser = subparsers.add_parser('generate-pdf', help='Generate a PDF file. Followed by one or two args: The part to the input HTML file, and path to the output PDF file. EG: "--generate-pdf path/to/file.html path/to/file.pdf"')
     genpdf_parser.add_argument('paths', nargs='*')
 
-    genpdf_parser.add_argument("--pdf-kwargs-json", dest="pdf_kwargs_json", help="Path to a JSON file whose contents can decode to a pdf_kwargs dict.")
+    genpdf_parser.add_argument("--pdf-kwargs-json", help="Path to a JSON file whose contents can decode to a pdf_kwargs dict.")
 
-    genpdf_parser.add_argument("--chrome-path", dest="chrome_path", help="Pass path to Chrome executable")
-    genpdf_parser.add_argument("--chromedriver-path", dest="chromedriver_path", help="Pass path to Chrome executable")
-    genpdf_parser.add_argument("--chromedriver-downloads", dest="chromedriver_downloads", type=int, choices=(0, 1), help='1 or 0, to indicate whether to use Chromedriver downloads or not.')
-    genpdf_parser.add_argument("--chrome-args", dest="chrome_args", help='A string of all arguments to pass to Chrome, separated by spaces.')
+    genpdf_parser.add_argument("--chrome-path", help="Path to Chrome executable")
+    genpdf_parser.add_argument("--chromedriver-path", help="Path to Chrome executable")
+    genpdf_parser.add_argument("--chromedriver-downloads", type=int, choices=(0, 1), help='1 or 0, to indicate whether to use Chromedriver downloads or not.')
+    genpdf_parser.add_argument("--chrome-args", help='A string of all arguments to pass to Chrome, separated by spaces.')
 
-    namespace = parser.parse_args(*args)
+    namespace = parser.parse_args(args)
     # print(namespace)
 
     if namespace.command == 'generate-pdf':
@@ -32,13 +32,12 @@ def chromepdf_run(*args):
 
         if len(namespace.paths) == 1:
             inpath = namespace.paths[0]
-            outpath = os.path.splitext(inpath)[0] + '.pdf'
+            outpath = os.path.splitext(inpath)[0] + '.pdf'  # replace extension with pdf. OR append if has none.
         elif len(namespace.paths) == 2:
             inpath, outpath = namespace.paths
         else:
             parser.error('--generate-pdf: requires one or two path arguments for an infile and optional outfile.')
 
-        #inpath = namespace.infile
         if not os.path.exists(inpath):
             parser.error(f'--generate-pdf: could not find input html file: "{inpath}"')
 

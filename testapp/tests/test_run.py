@@ -1,8 +1,10 @@
+import io
 import json
 import os
 import shutil
 import subprocess
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from unittest import mock
 from unittest.case import TestCase
 
@@ -16,11 +18,26 @@ from testapp.tests.utils import extractText, findChromePath
 PY_EXE = sys.executable
 
 
-def subprocess_run(*args, **kwargs):
+def subprocess_run(args, **kwargs):
     """
     Subprocess run shortcut that works in Python 3.6 (doesn't support capture_output=True)
     """
-    p = subprocess.run(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)  # pylint: disable=subprocess-run-check)
+
+    # redundant. will ensure coverage will detect lines covered within chromepdf_run()
+    # this is ugly, but easier than dealing with coverage correctly handling subprocess calls
+    # and triggering false flag suspicious activity antivirus warnings...
+    try:
+        with mock.patch('chromepdf.shortcuts.generate_pdf') as m:
+            m.side_effect = Exception('mock exception')  # raise exception, do not return files.
+            m.return_value = b'12345'
+            with redirect_stdout(io.StringIO()):
+                with redirect_stderr(io.StringIO()):
+                    chromepdf_run(args[3:])  # skip "python -m chromepdf" calls
+    except BaseException:  # catch exception, systemexit, parse errors too
+        pass
+
+    # subprocess call that actually runs tests
+    p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)  # pylint: disable=subprocess-run-check)
     return p
 
 
@@ -30,6 +47,12 @@ class CommandLineTests(TestCase):
     @classmethod
     def setUpClass(cls):
         os.makedirs(settings.TEMP_DIR, exist_ok=True)
+
+    def setUp(self):
+        # delete files between tests so tests do not interfere
+        for filename in os.listdir(settings.TEMP_DIR):
+            file_path = os.path.join(settings.TEMP_DIR, filename)
+            os.remove(file_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -94,7 +117,7 @@ class CommandLineTests(TestCase):
         """Generate a PDF where only the inpath is provided."""
 
         html = 'One Word'
-        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')  # ensure outfile is named "input.rev1.pdf" (keeps "rev1")
+        inpath = os.path.join(settings.TEMP_DIR, 'input.html.rev1.html')  # ensure outfile name only replaces final '.html'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
@@ -102,9 +125,28 @@ class CommandLineTests(TestCase):
         self.assertEqual(b'', proc.stderr)
         self.assertEqual(0, proc.returncode)
 
-        outpath = inpath.replace('.html', '.pdf')
-        self.assertTrue(os.path.exists(outpath))
-        with open(outpath, 'rb') as f:
+        expected_outpath = os.path.join(settings.TEMP_DIR, 'input.html.rev1.pdf')  # only replaces last suffix
+        self.assertTrue(os.path.exists(expected_outpath))
+        with open(expected_outpath, 'rb') as f:
+            pdf_bytes = f.read()
+
+        self.assertEqual(1, extractText(pdf_bytes).count(html))
+
+    def test_generate_pdf_inpath_no_ext(self):
+        """Generate a PDF where only the inpath is provided and has no extension."""
+
+        html = 'One Word'
+        inpath = os.path.join(settings.TEMP_DIR, 'inputhtml')  # ensure outfile name only replaces final '.html'
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath])   # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertEqual(b'', proc.stderr)
+        self.assertEqual(0, proc.returncode)
+
+        expected_outpath = os.path.join(settings.TEMP_DIR, 'inputhtml.pdf')  # suffix is appended
+        self.assertTrue(os.path.exists(expected_outpath))
+        with open(expected_outpath, 'rb') as f:
             pdf_bytes = f.read()
 
         self.assertEqual(1, extractText(pdf_bytes).count(html))
@@ -136,11 +178,81 @@ class CommandLineTests(TestCase):
         if os.path.exists(outpath):
             os.remove(outpath)
 
-    def test_generate_exception(self):
-        """Generate a PDF where an invalid argument causes generate_pdf() to fail."""
+    def test_generate_pdfkwargs_file_not_found(self):
+        """Generate a PDF where --pdf-kwargs-json file is missing."""
+
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        outpath = inpath.replace('.html', '.pdf')
+
+        if os.path.exists(outpath):
+            os.remove(outpath)
 
         html = 'One Word'
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
+
+        pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertIn(b'--generate-pdf: could not find input pdf-kwargs-json file', proc.stderr)
+        self.assertEqual(2, proc.returncode)
+        self.assertFalse(os.path.exists(outpath))
+
+    def test_generate_pdfkwargs_invalid_json(self):
+        """Generate a PDF where --pdf-kwargs-json does not contain valid json."""
+
         inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        outpath = inpath.replace('.html', '.pdf')
+
+        if os.path.exists(outpath):
+            os.remove(outpath)
+
+        html = 'One Word'
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
+        pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
+        with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
+            f.write("{ bad json")
+
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertIn(b'--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string', proc.stderr)
+        self.assertEqual(2, proc.returncode)
+        self.assertFalse(os.path.exists(outpath))
+
+    def test_generate_pdfkwargs_json_not_dict(self):
+        """Generate a PDF where --pdf-kwargs-json contains a non-dict json-encoded value."""
+
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        outpath = inpath.replace('.html', '.pdf')
+
+        if os.path.exists(outpath):
+            os.remove(outpath)
+
+        html = 'One Word'
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
+        pdf_kwargs = ['marginWrong']  # this is not a valid pdf_kwargs setting. PDF generation should fail.
+        pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
+        with open(pdf_kwargs_json_path, 'w', encoding='utf8') as f:
+            f.write(json.dumps(pdf_kwargs))
+
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertIn(b'--pdf-kwargs-json: must be a path to file containing a JSON dict encoded as a string', proc.stderr)
+        self.assertEqual(2, proc.returncode)
+        self.assertFalse(os.path.exists(outpath))
+
+    def test_generate_pdfkwargs_bad_values(self):
+        """Generate a PDF where --pdf-kwargs-json contains pdf kwargs that are not recognized."""
+
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        outpath = inpath.replace('.html', '.pdf')
+
+        if os.path.exists(outpath):
+            os.remove(outpath)
+
+        html = 'One Word'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         pdf_kwargs = {'marginWrong': '1in'}  # this is not a valid pdf_kwargs setting. PDF generation should fail.
@@ -150,10 +262,8 @@ class CommandLineTests(TestCase):
 
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
-        self.assertTrue(b'ValueError: Unrecognized pdf_kwargs passed to generate_pdf()' in proc.stderr)
+        self.assertIn(b'ValueError: Unrecognized pdf_kwargs passed to generate_pdf()', proc.stderr)
         self.assertEqual(1, proc.returncode)
-
-        outpath = inpath.replace('.html', '.pdf')
         self.assertFalse(os.path.exists(outpath))
 
     def test_generate_pdf_inpath_outpath(self):
@@ -209,10 +319,10 @@ class CommandLineTests(TestCase):
             f'--chrome-args={chrome_args}',  # should still work even with spaces
             f'--pdf-kwargs-json={pdf_kwargs_json_path}',
         ]
-        # alternate args:
-        # kwargs before args
-        # reverse order
-        # uses "--key value" instead of "--key=value", both are valid under Python's argparse
+        # these alternate args are functionally equivalent to the above. make sure they work too.
+        # - kwargs before args
+        # - reverse order of kwargs
+        # - uses "--key value" instead of "--key=value", both are valid under Python's argparse
         args_alternate = [
             PY_EXE,
             '-m',

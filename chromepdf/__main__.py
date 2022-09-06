@@ -4,8 +4,8 @@ To execute, run:
 > python -m chromepdf generate-pdf [args] [kwargs]
 """
 
-import sys
+if __name__ == '__main__':
+    import sys
 
-from .run import chromepdf_run
-
-chromepdf_run(sys.argv[1:])
+    from .run import chromepdf_run
+    chromepdf_run(sys.argv[1:])
