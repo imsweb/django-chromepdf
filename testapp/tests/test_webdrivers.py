@@ -69,7 +69,7 @@ class GetChromeVersionTests(TestCase):
         with mock.patch('platform.system') as m1:
             m1.return_value = 'Windows'
             with mock.patch('subprocess.run') as m2:
-                m2.return_value = ''
+                m2.return_value = MockProcessResult('')
 
                 with self.assertRaises(ChromePdfException):
                     output = get_chrome_version(path)
@@ -105,7 +105,7 @@ class GetChromeVersionTests(TestCase):
             with mock.patch('platform.system') as m1:
                 m1.return_value = system
                 with mock.patch('subprocess.run') as m2:
-                    m2.return_value = ''
+                    m2.return_value = MockProcessResult('')
 
                     with self.assertRaises(ChromePdfException):
                         output = get_chrome_version(path)

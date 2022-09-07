@@ -54,7 +54,7 @@ def get_chrome_version(path):
             return tuple(int(i) for i in version.split('.'))
 
     except Exception as ex:
-        # FileNotFoundError, CalledProcessError, etc
+        # FileNotFoundError, CalledProcessError, IndexError, etc
         raise ChromePdfException(f'Could not determine version of Chrome located at: "{path}"') from ex
 
 
