@@ -103,12 +103,11 @@ def _fetch_chromedriver_version_for_chrome_version(version):
     return chromedriver_version
 
 
-def _fetch_chromedriver_zip_bytes(chromedriver_version):
+def _get_chromedriver_zip_url(chromedriver_version):
     """
-    Return the bytes of the chromedriver zip file for the given chromedriver version, for our OS.
+    Get the name of the chromedriver zip download url for our particular OS+Processor
     """
 
-    # Get the name of the chromedriver zip download file for our particular OS+Processor
     is_windows = (platform.system() == 'Windows')
     is_mac = (platform.system() == 'Darwin')
     is_mac_m1 = (is_mac and platform.processor() == 'arm')
@@ -123,8 +122,15 @@ def _fetch_chromedriver_zip_bytes(chromedriver_version):
         os_plus_numbits = 'linux64'
     filename = f'chromedriver_{os_plus_numbits}.zip'
 
-    # Download the zip file
-    url = f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/{filename}'
+    return f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/{filename}'
+
+
+def _fetch_chromedriver_zip_bytes(chromedriver_version):
+    """
+    Return the bytes of the chromedriver zip file for the given chromedriver version, for our OS.
+    """
+
+    url = _get_chromedriver_zip_url(chromedriver_version)
     with urllib_request.urlopen(url) as f:
         zip_bytes = f.read()
     return zip_bytes

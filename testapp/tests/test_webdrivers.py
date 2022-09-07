@@ -1,19 +1,195 @@
 import os
+import platform
 import time
+from unittest import mock
 from unittest.case import TestCase
 
+from django.conf import settings
 from django.test.utils import override_settings
 
 from chromepdf.conf import parse_settings
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
-from chromepdf.webdrivers import (_get_chrome_webdriver_kwargs,
-                                  _get_chromedriver_download_path,
-                                  _get_chromedriver_environment_path,
-                                  _get_chromesession_temp_dir, devtool_command,
-                                  download_chromedriver_version,
-                                  get_chrome_version, get_chrome_webdriver)
+from chromepdf.webdrivers import (
+    _get_chrome_webdriver_kwargs, _get_chromedriver_download_path,
+    _get_chromedriver_environment_path, _get_chromedriver_zip_url,
+    _get_chromesession_temp_dir, devtool_command,
+    download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import findChromePath
+
+
+class MockProcessResult:
+
+    def __init__(self, stdout=None, stderr=None):
+        self.stdout = stdout.encode('utf8') if isinstance(stdout, str) else stdout
+        self.stderr = stderr.encode('utf8') if isinstance(stderr, str) else stderr
+
+
+class GetChromeVersionTests(TestCase):
+
+    def test_get_chrome_version(self):
+        """Work for current OS. Get it for real. No mocking."""
+
+        path = findChromePath()
+        output = get_chrome_version(path)
+        self.assertIsInstance(output, tuple)
+        self.assertEqual(4, len(output))
+        self.assertTrue(isinstance(i, int) for i in output)
+
+    def test_get_chrome_version_windows(self):
+        """Mock the Windows method of getting the version."""
+
+        path = findChromePath()
+        expected_output = (85, 12, 45, 143)
+        output_str = '.'.join(str(i) for i in expected_output)
+
+        with mock.patch('platform.system') as m1:
+            m1.return_value = 'Windows'
+            with mock.patch('subprocess.run') as m2:
+                def side_effect(value, *args, **kwargs):
+                    "Powershell should output a table like this when passed a specific command for version info."
+                    if value == ['powershell', f'(Get-Item "{path}").VersionInfo']:
+                        stdout = f"""
+        ProductVersion   FileVersion      FileName
+        --------------   -----------      --------
+        {output_str}     {output_str}     {path}
+        """
+                    else:
+                        stdout = ''
+                    return MockProcessResult(stdout=stdout)
+                m2.side_effect = side_effect
+
+                output = get_chrome_version(path)
+                self.assertEqual(expected_output, output)
+
+    def test_get_chrome_version_windows_failure(self):
+        """Test Windows version when it doesn't output an actual version."""
+
+        path = findChromePath()
+        with mock.patch('platform.system') as m1:
+            m1.return_value = 'Windows'
+            with mock.patch('subprocess.run') as m2:
+                m2.return_value = ''
+
+                with self.assertRaises(ChromePdfException):
+                    output = get_chrome_version(path)
+
+    def test_get_chrome_version_linux_mac(self):
+        """Mock the Linux/Mac method of getting the version."""
+
+        path = findChromePath()
+        expected_output = (85, 12, 45, 143)
+        output_str = '.'.join(str(i) for i in expected_output)
+        output_str = f'Google Chrome {output_str}'  # chrome --version should output a string exactly like this.
+
+        for system in ('Linux', 'Darwin'):
+            with mock.patch('platform.system') as m1:
+                m1.return_value = system
+                with mock.patch('subprocess.run') as m2:
+                    def side_effect(value, *args, **kwargs):
+                        if value == [path, '--version']:
+                            stdout = output_str
+                        else:
+                            stdout = ''
+                        return MockProcessResult(stdout=stdout)
+                    m2.side_effect = side_effect
+
+                    output = get_chrome_version(path)
+                    self.assertEqual(expected_output, output)
+
+    def test_get_chrome_version_linux_mac_failure(self):
+        """Mock the Linux/Mac method of getting the version when it doesn't output an actual version."""
+
+        path = findChromePath()
+        for system in ('Linux', 'Darwin'):
+            with mock.patch('platform.system') as m1:
+                m1.return_value = system
+                with mock.patch('subprocess.run') as m2:
+                    m2.return_value = ''
+
+                    with self.assertRaises(ChromePdfException):
+                        output = get_chrome_version(path)
+
+
+class GetChromedriverDownloadPathTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
+        if not _get_chromedriver_environment_path():
+            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+
+    def test_current_os(self):
+        """Just call the function. Results will differ depending on OS."""
+
+        major_version = 25
+        path = _get_chromedriver_download_path(major_version)
+
+        is_windows = (platform.system() == 'Windows')
+        if is_windows:
+            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}.exe')
+        else:
+            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}')
+        self.assertTrue(expected_path, path)
+
+    def test_mocked_oses(self):
+        """Mock several OSes and make sure they return the right paths."""
+
+        major_version = 25
+        win_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}.exe')
+        lin_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}')
+        OS_TESTS = {
+            'Windows': win_path,
+            'Linux': lin_path,
+            'Darwin': lin_path,
+        }
+        for system, expected_path in OS_TESTS.items():
+            with self.subTest(system=system):
+                with mock.patch('platform.system') as m1:
+                    m1.return_value = system
+                    self.assertEqual(expected_path, _get_chromedriver_download_path(major_version))
+
+
+class GetChromedriverZipUrlTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
+        if not _get_chromedriver_environment_path():
+            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+
+    def test_current_os(self):
+        """Just call the function. Results will differ depending on OS."""
+
+        chromedriver_version = '85.5.6.114'
+        url = _get_chromedriver_zip_url(chromedriver_version)
+
+        self.assertTrue(url.startswith(f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/chromedriver_'))
+        self.assertTrue(url.endswith('.zip'))
+
+    def test_mocked_oses(self):
+        """Mock several OSes and make sure they return the right paths."""
+
+        chromedriver_version = '85.5.6.114'
+        OS_TESTS = {
+            ('Windows', 'amdk6'): 'win32',
+            ('Linux', 'amdk6'): 'linux64',
+            ('Darwin', 'amdk6'): 'mac64',
+            ('Darwin', 'arm'): 'mac64_m1',
+        }
+        for system_processor, expected_zip in OS_TESTS.items():
+            expected_path = f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/chromedriver_{expected_zip}.zip'
+            system, processor = system_processor
+            with self.subTest(system=system, processor=processor):
+                with mock.patch('platform.system') as m1:
+                    m1.return_value = system
+                    with mock.patch('platform.processor') as m2:
+                        m2.return_value = processor
+                        self.assertEqual(expected_path, _get_chromedriver_zip_url(chromedriver_version))
 
 
 class ChromeDriverDownloadTests(TestCase):
