@@ -1,3 +1,4 @@
+import importlib
 import io
 import json
 import os
@@ -10,6 +11,7 @@ from unittest.case import TestCase
 
 from django.conf import settings
 
+import chromepdf
 from chromepdf.run import chromepdf_run
 from chromepdf.webdrivers import _get_chromedriver_environment_path
 from testapp.tests.utils import extractText, findChromePath
@@ -57,6 +59,19 @@ class CommandLineTests(TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(settings.TEMP_DIR)
+
+    def test_main(self):
+        """Test calling chrome.pdf.__main__, the entry point."""
+
+        # "python -m chromepdf" causes sys.argv to be manipulated into something like this
+        # by the time it reaches chromepdf.__main__
+        argv = ['path/to/chromepdf/__main__.py', 'generate-pdf', 'input.html']
+
+        from chromepdf import __main__
+        with mock.patch.object(sys, 'argv', argv):
+            with mock.patch('chromepdf.run.chromepdf_run') as f:
+                __main__.main()
+                f.assert_called_with(['generate-pdf', 'input.html'])
 
     def test_run_no_args(self):
         """Should display help text with error returncode"""

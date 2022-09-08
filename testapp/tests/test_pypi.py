@@ -1,6 +1,5 @@
+import os
 from unittest.case import TestCase
-
-from coverage.annotate import os
 
 from chromepdf import __version__ as chromepdf_version
 

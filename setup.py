@@ -33,7 +33,7 @@ def find_chromepdf_packages():
 
 setup_params = dict(
     name='django-chromepdf',
-    version=get_version(),  # Make sure to update the string in chromepdf.__init__.__version__ too
+    version=get_version(),
     description='A small Python 3 library that uses Selenium and Google Chrome to convert HTML into a PDF.',
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
