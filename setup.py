@@ -16,6 +16,7 @@ def get_long_description():
     """
     Return a long description consisting of the readme's contents.
     The contents are Markdown, so be sure to set the "long_description_content_type" accordingly.
+    Convert all relative urls into absolute ones so that they will display correctly on Pypi.
     """
     with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf8') as fp:
         contents = fp.read()
@@ -26,7 +27,11 @@ def get_long_description():
         return contents
 
 
-setup(
+def find_chromepdf_packages():
+    return find_packages(exclude=['testapp', '*testapp*', 'testapp.*'])
+
+
+setup_params = dict(
     name='django-chromepdf',
     version=get_version(),  # Make sure to update the string in chromepdf.__init__.__version__ too
     description='A small Python 3 library that uses Selenium and Google Chrome to convert HTML into a PDF.',
@@ -36,7 +41,7 @@ setup(
     author_email='kukwaa@imsweb.com',
     url='https://github.com/imsweb/django-chromepdf',
     license='BSD',
-    packages=find_packages(exclude=['testapp', '*testapp*', 'testapp.*']),
+    packages=find_chromepdf_packages(),
     include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -54,7 +59,6 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
     ],
     python_requires='~=3.6',
     install_requires=[
@@ -65,3 +69,7 @@ setup(
         "Changelog": "https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md/",
     },
 )
+
+if __name__ == '__main__':
+    # place setup() in conditional and keep params in global dict so unit tests can access them without calling setup()
+    setup(**setup_params)
