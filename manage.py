@@ -14,6 +14,9 @@ if __name__ == "__main__":
     # print(githooks_path)
     subprocess.call(['git', 'config', 'core.hooksPath', githooks_path], cwd=cwd)
 
+    is_windows = (platform.system() == 'Windows')
+    chromedriver_filename = 'chromedriver.exe' if is_windows else 'chromedriver'
+
     # easy way to download a chromedriver into current working dir, needed for unit tests.
     if 'getchromedriver' in sys.argv:
         from testapp.tests.utils import findChromePath
@@ -24,9 +27,9 @@ if __name__ == "__main__":
                                           get_chrome_version)
         version = get_chrome_version(chrome_path)
         path = download_chromedriver_version(version)
-        if os.path.exists('chromedriver.exe'):
-            os.remove('chromedriver.exe')
-        os.rename(path, 'chromedriver.exe')
+        if os.path.exists(chromedriver_filename):
+            os.remove(chromedriver_filename)
+        os.rename(path, chromedriver_filename)
         exit(0)
 
     # do some checks so environment tests will pass.
@@ -37,18 +40,16 @@ if __name__ == "__main__":
         from chromepdf.webdrivers import get_chrome_version
         from testapp.tests.utils import findChromePath
 
-        is_windows = (platform.system() == 'Windows')
-        exe_filename = 'chromedriver.exe' if is_windows else 'chromedriver'
-
-        chromedriver_path = shutil.which(exe_filename)
+        chromedriver_path = shutil.which(chromedriver_filename)
         chrome_path = findChromePath()
         if chrome_path is None:
             raise EnvironmentError('You must have a chrome.exe on your PATH.')
         if chromedriver_path is None:
-            raise EnvironmentError(f"You must have a '{exe_filename}' on your PATH. Run manage.py getchromedriver to fetch one.")
+            raise EnvironmentError(f"You must have a '{chromedriver_filename}' on your PATH. Run manage.py getchromedriver to fetch one.")
 
         chrome_version = get_chrome_version(chrome_path)
-        chromedriver_version = subprocess.Popen([exe_filename, '--version'], stdout=subprocess.PIPE).communicate()[0].decode('utf8')
+        with subprocess.Popen([chromedriver_filename, '--version'], stdout=subprocess.PIPE) as p:
+            chromedriver_version = p.communicate()[0].decode('utf8')
         # Output is, EG: b'ChromeDriver 95.0.4638.54 (d31a821ec901f68d0d34ccdbaea45b4c86ce543e-refs/branch-heads/4638@{#871})\r\n
         chromedriver_version = chromedriver_version.split()[1]  # 95.0.4638.54
         chromedriver_version = [int(c) for c in chromedriver_version.split('.')]  # (95,0,4638,54)
@@ -56,12 +57,6 @@ if __name__ == "__main__":
             raise EnvironmentError(f'Your PATH chromedriver version does not match your default chrome version: Chrome={chrome_version[0]}, Chromedriver={chromedriver_version[0]} (located at "{chromedriver_path}"). Make sure these match before running your tests.')
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")
-
-    if 'entrypoint' in sys.argv:
-        print('Running entry point...')
-        from chromepdf.run import chromepdf_run
-        command_line_interface(sys.argv[2:])
-        exit()
 
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)

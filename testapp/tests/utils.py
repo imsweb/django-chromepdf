@@ -66,3 +66,11 @@ def createTempFile(file_bytes):
     with tempfile.NamedTemporaryFile(delete=False) as temp:
         temp.write(file_bytes)
     return temp
+
+
+class MockCompletedProcess:
+    """Class for mocking a CompletedProcess with specific output returned by subprocess.run()."""
+
+    def __init__(self, stdout=None, stderr=None):
+        self.stdout = stdout.encode('utf8') if isinstance(stdout, str) else stdout
+        self.stderr = stderr.encode('utf8') if isinstance(stderr, str) else stderr

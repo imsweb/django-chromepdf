@@ -15,14 +15,19 @@ from chromepdf.webdrivers import (
     _get_chromedriver_environment_path, _get_chromedriver_zip_url,
     _get_chromesession_temp_dir, devtool_command,
     download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
-from testapp.tests.utils import findChromePath
+from testapp.tests.utils import MockCompletedProcess, findChromePath
 
 
-class MockProcessResult:
+class LocalChromedriverTestCase(TestCase):
+    """TestCase for tests that need a local chromedriver to exist in the current working directory."""
 
-    def __init__(self, stdout=None, stderr=None):
-        self.stdout = stdout.encode('utf8') if isinstance(stdout, str) else stdout
-        self.stderr = stderr.encode('utf8') if isinstance(stderr, str) else stderr
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
+        if not _get_chromedriver_environment_path():
+            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
 
 
 class GetChromeVersionTests(TestCase):
@@ -56,7 +61,7 @@ class GetChromeVersionTests(TestCase):
         """
                     else:
                         stdout = ''
-                    return MockProcessResult(stdout=stdout)
+                    return MockCompletedProcess(stdout=stdout)
                 m2.side_effect = side_effect
 
                 output = get_chrome_version(path)
@@ -69,7 +74,7 @@ class GetChromeVersionTests(TestCase):
         with mock.patch('platform.system') as m1:
             m1.return_value = 'Windows'
             with mock.patch('subprocess.run') as m2:
-                m2.return_value = MockProcessResult('')
+                m2.return_value = MockCompletedProcess('')
 
                 with self.assertRaises(ChromePdfException):
                     output = get_chrome_version(path)
@@ -91,7 +96,7 @@ class GetChromeVersionTests(TestCase):
                             stdout = output_str
                         else:
                             stdout = ''
-                        return MockProcessResult(stdout=stdout)
+                        return MockCompletedProcess(stdout=stdout)
                     m2.side_effect = side_effect
 
                     output = get_chrome_version(path)
@@ -105,21 +110,13 @@ class GetChromeVersionTests(TestCase):
             with mock.patch('platform.system') as m1:
                 m1.return_value = system
                 with mock.patch('subprocess.run') as m2:
-                    m2.return_value = MockProcessResult('')
+                    m2.return_value = MockCompletedProcess('')
 
                     with self.assertRaises(ChromePdfException):
                         output = get_chrome_version(path)
 
 
-class GetChromedriverDownloadPathTests(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
-        if not _get_chromedriver_environment_path():
-            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+class GetChromedriverDownloadPathTests(LocalChromedriverTestCase):
 
     def test_current_os(self):
         """Just call the function. Results will differ depending on OS."""
@@ -152,15 +149,7 @@ class GetChromedriverDownloadPathTests(TestCase):
                     self.assertEqual(expected_path, _get_chromedriver_download_path(major_version))
 
 
-class GetChromedriverZipUrlTests(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
-        if not _get_chromedriver_environment_path():
-            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+class GetChromedriverZipUrlTests(LocalChromedriverTestCase):
 
     def test_current_os(self):
         """Just call the function. Results will differ depending on OS."""
@@ -168,7 +157,11 @@ class GetChromedriverZipUrlTests(TestCase):
         chromedriver_version = '85.5.6.114'
         url = _get_chromedriver_zip_url(chromedriver_version)
 
-        self.assertTrue(url.startswith(f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/chromedriver_'))
+        prefix = f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/chromedriver_'
+        valid_os_types = ('win32', 'linux64', 'mac64', 'mac64_m1')
+        suffix = '.zip'
+        self.assertTrue(url.startswith(prefix))
+        self.assertTrue(url[len(prefix):-len(suffix)] in valid_os_types)
         self.assertTrue(url.endswith('.zip'))
 
     def test_mocked_oses(self):
@@ -192,15 +185,7 @@ class GetChromedriverZipUrlTests(TestCase):
                         self.assertEqual(expected_path, _get_chromedriver_zip_url(chromedriver_version))
 
 
-class ChromeDriverDownloadTests(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        # these tests rely on Selenium to find the chromedriver on PATH. Abort if it's not there.
-        if not _get_chromedriver_environment_path():
-            raise Exception('You must have `chromedriver/chromedriver.exe` on your PATH for these tests to pass.')
+class ChromeDriverDownloadTests(LocalChromedriverTestCase):
 
     def test_chromedriver_args(self):
 
