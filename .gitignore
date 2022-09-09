@@ -6,8 +6,11 @@
 docs/*/
 chromepdf/chromedrivers/chromedriver*
 chromepdf/chromesession/users/*/
+/testapp/temp/*
 /chromedriver.exe
 /chromedriver
+/*.pdf
+/*.html
 
 *.db
 *.log

@@ -60,8 +60,16 @@ class ChromePdfKwargsTests(TestCase):
 
     def test_clean_pdf_kwargs_invalid_keys(self):
 
+        # a single bad key will cause a failure
         with self.assertRaises(ValueError):
             _kwargs = clean_pdf_kwargs(badKey='1')
+
+        # multiple bad keys. Error message should list all of them. sorted.
+        with self.assertRaises(ValueError) as context:
+            _kwargs = clean_pdf_kwargs(badKey2='2', badKey1='1')
+
+        # Make sure the error message identifies the unrecognized arguments for easier debugging.
+        self.assertEqual('Unrecognized pdf_kwargs passed to generate_pdf(): badKey1, badKey2', str(context.exception))
 
     def test_clean_pdf_kwargs_override_boolean_values(self):
         """For each of the four boolean parameters, test setting them to True, False, and truthy/falsey values."""

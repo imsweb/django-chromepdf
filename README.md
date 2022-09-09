@@ -13,7 +13,7 @@ pdf_bytes = generate_pdf(html_string, pdf_kwargs, **kwargs)
 As of version 1.4, ChromePDF can also be run from the command line.
 
 ```
-python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome path/to/file.html path/to/output.pdf
+python -m chromepdf generate-pdf --chrome-path=/usr/bin/google-chrome path/to/input.html path/to/output.pdf
 ```
 
 Because it renders via Chrome, it supports a wide range of CSS and HTML tags that should display the same as if you used Chrome to view the HTML itself.

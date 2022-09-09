@@ -1,9 +1,13 @@
-# These requirements are for running unit tests.
+# Used by chromepdf itself
 selenium<5,>=3
+Django~=3.2.9
+
+# unit tests - measuring output
 pikepdf~=3.2.0; python_version < '3.7' # Still support Python 3.6
 pikepdf~=4.3.1; python_version >= '3.7'
+
+# unit tests - extracting text from pdf files
 pdfminer.six==20211012
-Django~=3.2.9
 
 # For code cleanup
 autopep8==1.4.4

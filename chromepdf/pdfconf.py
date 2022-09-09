@@ -186,7 +186,7 @@ def clean_pdf_kwargs(**options):
     parameters_keys = set(parameters.keys())
     options_keys = set(options.keys())
     if not options_keys.issubset(parameters_keys):
-        unrecognized_keys = ', '.join(options_keys - parameters_keys)
+        unrecognized_keys = ', '.join(sorted(options_keys - parameters_keys))
         raise ValueError(f'Unrecognized pdf_kwargs passed to generate_pdf(): {unrecognized_keys}')
 
     return parameters

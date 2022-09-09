@@ -105,7 +105,9 @@ def _fetch_chromedriver_version_for_chrome_version(version):
 
 def _get_chromedriver_zip_url(chromedriver_version):
     """
-    Get the name of the chromedriver zip download url for our particular OS+Processor
+    Get the name of the chromedriver zip download url for our particular OS+Processor.
+    The possible urls are taken from the chromedriver release files list, here:
+    https://chromedriver.chromium.org/downloads
     """
 
     is_windows = (platform.system() == 'Windows')
