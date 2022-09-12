@@ -160,6 +160,12 @@ class GeneratePdfUrlSimpleTests(TestCase):
 
 
 class GeneratePdfThreadTests(TestCase):
+    """
+    Ensure ChromePF can handle multiple PDFs being generated at the same time.
+    With certain command-line arguments (or lack thereof), Chrome will encounter problems
+    due to multiple processes fighting over the same temp files.
+    This includes the lack of --disable-crash-reporter and --incognito flags, especially on Linux.
+    """
 
     @staticmethod
     def _gen_pdf(num):
@@ -169,7 +175,7 @@ class GeneratePdfThreadTests(TestCase):
         _pdfbytes = generate_pdf(html)
 
     def test_multiprocess(self):
-        """Test two processes trying to create a PDF at the same time."""
+        """Test multiple processes trying to create a PDF at the same time."""
 
         with Pool() as p:
             results = []
@@ -183,7 +189,7 @@ class GeneratePdfThreadTests(TestCase):
                 #print(f'got {i}')
 
     def test_multithread(self):
-        """Test two threads trying to create a PDF at the same time."""
+        """Test multiple threads trying to create a PDF at the same time."""
 
         with ThreadPool() as p:
             results = []

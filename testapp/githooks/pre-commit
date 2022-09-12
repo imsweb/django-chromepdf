@@ -1,6 +1,11 @@
 #!/bin/bash
-# Let's call this script venv.sh
-# echo "$PWD"
-source "..\pybin\Scripts\activate"
-python "testapp\githooks\pre_commit.py"
-
+# Windows activate python
+if [ -x "..\pybin\Scripts\activate" ]; then
+    source "..\pybin\Scripts\activate"
+    python "testapp\githooks\pre_commit.py"
+fi
+# Linux activate python
+if [ -x "..\pybin\bin\activate" ]; then
+    source "..\pybin\bin\activate"
+    python "testapp\githooks\pre_commit.py"
+fi
