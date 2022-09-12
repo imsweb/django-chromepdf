@@ -1,11 +1,11 @@
 #!/bin/bash
-# Windows activate python
-if [ -x "..\pybin\Scripts\activate" ]; then
+if [ -f "..\pybin\Scripts\activate" ]
+then
+    # Windows activate python
     source "..\pybin\Scripts\activate"
     python "testapp\githooks\pre_commit.py"
-fi
-# Linux activate python
-if [ -x "..\pybin\bin\activate" ]; then
+else
+    # Linux activate python
     source "..\pybin\bin\activate"
     python "testapp\githooks\pre_commit.py"
 fi
