@@ -23,9 +23,9 @@ def _get_parser():
     import argparse
     parser = argparse.ArgumentParser()
 
-    subparsers = parser.add_subparsers(help='You may call the command "generatepdf"', dest='command')
+    subparsers = parser.add_subparsers(help='You may call the following commands:', dest='command')
 
-    # For now, we only have one sub-command: generatepdf.
+    # For now, we only have one sub-command: generate-pdf.
     # Other sub-commands may be added in the future
     genpdf_parser = subparsers.add_parser('generate-pdf', help='Generate a PDF file. Followed by one or two args: The part to the input HTML file, and path to the output PDF file. EG: "--generate-pdf path/to/file.html path/to/file.pdf"')
     genpdf_parser.add_argument('paths', nargs='*')
