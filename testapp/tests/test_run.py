@@ -209,7 +209,7 @@ class CommandLineTests(TestCase):
         pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, f'--pdf-kwargs-json={pdf_kwargs_json_path}'])   # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
-        self.assertIn(b'--generate-pdf: could not find input pdf-kwargs-json file', proc.stderr)
+        self.assertIn(b'generate-pdf: could not find input pdf-kwargs-json file', proc.stderr)
         self.assertEqual(2, proc.returncode)
         self.assertFalse(os.path.exists(outpath))
 

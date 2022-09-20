@@ -65,8 +65,8 @@ setup_params = dict(
         'selenium<5,>=3'
     ],
     project_urls={
-        "Source": "https://github.com/imsweb/django-chromepdf/",
-        "Changelog": "https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md/",
+        "Source": "https://github.com/imsweb/django-chromepdf",
+        "Changelog": "https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md",
     },
 )
 

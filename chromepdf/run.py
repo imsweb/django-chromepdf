@@ -27,7 +27,7 @@ def _get_parser():
 
     # For now, we only have one sub-command: generate-pdf.
     # Other sub-commands may be added in the future
-    genpdf_parser = subparsers.add_parser('generate-pdf', help='Generate a PDF file. Followed by one or two args: The part to the input HTML file, and path to the output PDF file. EG: "--generate-pdf path/to/file.html path/to/file.pdf"')
+    genpdf_parser = subparsers.add_parser('generate-pdf', help='Generate a PDF file. Followed by one or two args: The part to the input HTML file, and path to the output PDF file. EG: "generate-pdf path/to/file.html path/to/file.pdf"')
     genpdf_parser.add_argument('paths', nargs='*')
     genpdf_parser.add_argument("--pdf-kwargs-json", help="Path to a JSON file whose contents can decode to a pdf_kwargs dict.")
     genpdf_parser.add_argument("--chrome-path", help="Path to Chrome executable")
@@ -44,7 +44,7 @@ def _command_generate_pdf(parser, namespace):
     import os
 
     if namespace.paths is None or len(namespace.paths) == 0:
-        parser.error('--generate-pdf: requires one or two path arguments for an infile and optional outfile.')
+        parser.error('generate-pdf: requires one or two path arguments for an infile and optional outfile.')
 
     if len(namespace.paths) == 1:
         inpath = namespace.paths[0]
@@ -52,10 +52,10 @@ def _command_generate_pdf(parser, namespace):
     elif len(namespace.paths) == 2:
         inpath, outpath = namespace.paths
     else:
-        parser.error('--generate-pdf: requires one or two path arguments for an infile and optional outfile.')
+        parser.error('generate-pdf: requires one or two path arguments for an infile and optional outfile.')
 
     if not os.path.exists(inpath):
-        parser.error(f'--generate-pdf: could not find input html file: "{inpath}"')
+        parser.error(f'generate-pdf: could not find input html file: "{inpath}"')
 
     with open(inpath, 'r', encoding='utf8') as f:
         html_str = f.read()
@@ -73,7 +73,7 @@ def _command_generate_pdf(parser, namespace):
     pdf_kwargs = None
     if namespace.pdf_kwargs_json is not None:
         if not os.path.exists(namespace.pdf_kwargs_json):
-            parser.error(f'--generate-pdf: could not find input pdf-kwargs-json file: "{namespace.pdf_kwargs_json}"')
+            parser.error(f'generate-pdf: could not find input pdf-kwargs-json file: "{namespace.pdf_kwargs_json}"')
         try:
             import json
             with open(namespace.pdf_kwargs_json, 'r', encoding='utf8') as f:
