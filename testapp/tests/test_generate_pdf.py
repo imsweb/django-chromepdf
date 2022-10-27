@@ -8,7 +8,9 @@ from unittest.case import TestCase
 from unittest.mock import patch
 
 from django.test.utils import override_settings
-from pikepdf import Pdf
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
 
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
@@ -244,14 +246,17 @@ class PdfPageSizeTests(TestCase):
     """
 
     def assertPageSizeInInches(self, pdfbytes, expected_size):
-        pdf = Pdf.open(BytesIO(pdfbytes))
+        "Assert that the PDF passed has the expected size desired, in inches. E.G., espected_size = (8.5, 11)"
 
-        # this gives us a 4-length list similar to: [0, 0, 612, 792] for an 8.5x11 page.
-        page_rect = pdf.pages[0].MediaBox
-        page_rect = json.loads(page_rect.to_json().decode('utf8'))  # there must be an easier way...
+        parser = PDFParser(BytesIO(pdfbytes))
+        document = PDFDocument(parser)
+        for page in PDFPage.create_pages(document):
+            page_rect = page.mediabox
+            break
+
         _, _, w, h = page_rect
 
-        # allow some margin of error (2 pixels at 72 dpi)
+        # allow some margin (HA!) of error (2 pixels at 72 dpi)
         self.assertTrue(expected_size[0] * 72 - 2 <= w <= expected_size[0] * 72 + 2)
         self.assertTrue(expected_size[1] * 72 - 2 <= h <= expected_size[1] * 72 + 2)
 

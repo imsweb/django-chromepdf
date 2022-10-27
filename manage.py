@@ -54,7 +54,7 @@ if __name__ == "__main__":
         chromedriver_version = chromedriver_version.split()[1]  # 95.0.4638.54
         chromedriver_version = [int(c) for c in chromedriver_version.split('.')]  # (95,0,4638,54)
         if chrome_version[0] != chromedriver_version[0]:
-            raise EnvironmentError(f'Your PATH chromedriver version does not match your default chrome version: Chrome={chrome_version[0]}, Chromedriver={chromedriver_version[0]} (located at "{chromedriver_path}"). Make sure these match before running your tests.')
+            raise EnvironmentError(f'Your PATH chromedriver version does not match your default chrome version: Chrome={chrome_version[0]}, Chromedriver={chromedriver_version[0]} (located at "{chromedriver_path}"). Make sure these match before running your tests. Run "manage.py getchromedriver" to fetch one.')
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")
 
