@@ -17,6 +17,15 @@ from chromepdf.webdrivers import (
     download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import MockCompletedProcess, findChromePath
 
+# indicate whether selenium will account for missing chromedrivers or not
+# See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
+try:
+    from selenium.webdriver.common.selenium_manager import \
+        SeleniumManager  # pylint: disable=unused-import
+    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = True
+except Exception:
+    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = False
+
 
 class LocalChromedriverTestCase(TestCase):
     """TestCase for tests that need a local chromedriver to exist in the current working directory."""
@@ -273,10 +282,19 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
             with get_chrome_webdriver(chrome_path=bad_path, chromedriver_path=chromedriver_path):
                 pass
 
-        # bad chromedriver path should throw exception
-        with self.assertRaises(ChromePdfException):
+        # bad chromedriver path should throw exception...
+        # But in Selenium 4.6.0, they added the SeleniumManager (in beta) which will try to automatically download
+        # it in the event that the provided chromedriver path does not exist.
+        # See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
+        if _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS:
+            # no exception for missing chromedriver path. selenium will fix it.
             with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=bad_path):
                 pass
+        else:
+            # assert an exception. selenium won't fix it.
+            with self.assertRaises(ChromePdfException):
+                with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=bad_path):
+                    pass
 
         # don't throw exception
         with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path):
