@@ -6,6 +6,7 @@ from chromepdf.conf import parse_settings
 from chromepdf.pdfconf import clean_pdf_kwargs
 from chromepdf.sizes import convert_to_inches
 
+
 CHROME_PATH_SETTING_VAL = r'C://django/settings/path/to/my/chrome'
 CHROMEDRIVER_PATH_SETTING_VAL = r'C://django/settings/path/to/my/chromedriver'
 

@@ -5,6 +5,7 @@ from unittest.case import TestCase
 
 from django.test.utils import tag
 
+from chromepdf import generate_pdf, generate_pdf_url
 from testapp.tests.utils import extractText
 
 
@@ -13,8 +14,6 @@ class GeneratePdfStressTests(TestCase):
 
     def test_generate_pdf_huge_pdfs(self):
         """Test outputting PDFs when the HTML is 1 MB."""
-
-        from chromepdf import generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
 
@@ -25,8 +24,6 @@ class GeneratePdfStressTests(TestCase):
         self.assertEqual(1000 * 100, extracted_text.count('123456789'))
 
     def test_generate_pdf_url_huge_pdfs(self):
-
-        from chromepdf import generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
 

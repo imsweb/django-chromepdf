@@ -5,6 +5,7 @@ from unittest.case import TestCase
 
 from django.test.utils import override_settings
 
+from chromepdf import generate_pdf, generate_pdf_url
 from chromepdf.conf import get_chromepdf_settings_dict
 from chromepdf.webdrivers import _get_chromedriver_environment_path
 from testapp.tests.utils import createTempFile
@@ -75,18 +76,12 @@ class TestWithoutDjangoTests(TestCase):
     def test_generate_pdf_without_django(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = 'One Word'
         pdfbytes = generate_pdf(html)
         self.assertIsInstance(pdfbytes, bytes)
 
     def test_generate_pdf_url_without_django(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function."""
-
-        from chromepdf import \
-            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         html = "This is a test"
         try:

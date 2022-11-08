@@ -1,3 +1,4 @@
+import copy
 import os
 import platform
 import time
@@ -11,17 +12,16 @@ from chromepdf.conf import parse_settings
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (
-    _get_chrome_webdriver_kwargs, _get_chromedriver_download_path,
-    _get_chromedriver_environment_path, _get_chromedriver_zip_url,
-    _get_chromesession_temp_dir, devtool_command,
-    download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
+    _get_chrome_webdriver_kwargs, _get_chromedriver_download_path, _get_chromedriver_environment_path,
+    _get_chromedriver_zip_url, _get_chromesession_temp_dir, devtool_command, download_chromedriver_version,
+    get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import MockCompletedProcess, findChromePath
+
 
 # indicate whether selenium will account for missing chromedrivers or not
 # See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
 try:
-    from selenium.webdriver.common.selenium_manager import \
-        SeleniumManager  # pylint: disable=unused-import
+    from selenium.webdriver.common.selenium_manager import SeleniumManager  # pylint: disable=unused-import
     _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = True
 except Exception:
     _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = False
@@ -315,6 +315,7 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
             'chromedriver_path': chromedriver_path,
             'chrome_args': ['--no-sandbox']
         }
+        kwargs_original = copy.deepcopy(kwargs)
 
         # should especially not change kwargs
         _get_chrome_webdriver_kwargs(**kwargs)
@@ -324,7 +325,7 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
             pass
 
         # kwargs was unchanged by pop etc commands?
-        self.assertEqual(3, len(kwargs))
+        self.assertEqual(kwargs_original, kwargs)
 
     def test_devtool_command_failure(self):
         """Make sure bad parameters to devtool_command will raise ChromePdfException."""

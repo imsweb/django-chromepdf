@@ -4,8 +4,7 @@ from unittest.case import TestCase
 from django.test.utils import override_settings
 
 from chromepdf.conf import get_chromepdf_settings_dict
-from chromepdf.pdfconf import (DEFAULT_PDF_KWARGS, clean_pdf_kwargs,
-                               get_default_pdf_kwargs)
+from chromepdf.pdfconf import DEFAULT_PDF_KWARGS, clean_pdf_kwargs, get_default_pdf_kwargs
 from chromepdf.sizes import PAPER_FORMATS, convert_to_inches
 
 

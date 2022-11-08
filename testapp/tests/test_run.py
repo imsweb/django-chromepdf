@@ -16,6 +16,7 @@ from chromepdf.run import chromepdf_run
 from chromepdf.webdrivers import _get_chromedriver_environment_path
 from testapp.tests.utils import extractText, findChromePath
 
+
 # whichever python exe is running the tests, use the same one to run the commands.
 PY_EXE = sys.executable
 

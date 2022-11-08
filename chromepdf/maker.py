@@ -6,9 +6,9 @@ from urllib.parse import urlparse
 
 from chromepdf.conf import parse_settings
 from chromepdf.pdfconf import clean_pdf_kwargs
-from chromepdf.webdrivers import (_get_chromesession_temp_dir, devtool_command,
-                                  download_chromedriver_version,
-                                  get_chrome_version, get_chrome_webdriver)
+from chromepdf.webdrivers import (
+    _get_chromesession_temp_dir, devtool_command, download_chromedriver_version, get_chrome_version,
+    get_chrome_webdriver)
 
 
 class ChromePdfMaker:

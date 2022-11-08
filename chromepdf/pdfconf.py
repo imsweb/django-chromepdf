@@ -1,6 +1,7 @@
 from chromepdf.conf import get_chromepdf_settings_dict
 from chromepdf.sizes import PAPER_FORMATS, convert_to_inches
 
+
 # Specified in printToPDF API - https://chromedevtools.github.io/devtools-protocol/1-3/Page/#method-printToPDF
 # These are the "TRUE" defaults.
 # If no overrides are provided in Django's settings.CHROMEPDF['PDF_KWARGS'], and no pdf_kwargs are passed to render functions,

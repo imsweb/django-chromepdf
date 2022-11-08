@@ -1,8 +1,7 @@
 from decimal import Decimal
 from unittest.case import TestCase
 
-from chromepdf.sizes import (PAPER_FORMATS, UNIT_STR_LENGTH, UNITS_PER_INCH,
-                             convert_to_inches, convert_to_unit)
+from chromepdf.sizes import PAPER_FORMATS, UNIT_STR_LENGTH, UNITS_PER_INCH, convert_to_inches, convert_to_unit
 
 
 class ChromePdfKwargsTests(TestCase):

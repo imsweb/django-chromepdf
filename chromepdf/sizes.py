@@ -1,6 +1,7 @@
 import string
 from decimal import Decimal
 
+
 # For more information, see: https://www.w3.org/TR/CSS2/syndata.html#length-units
 # NOTE: All keys should be two chars long. All values should be integers or floats.
 UNITS_PER_INCH = {

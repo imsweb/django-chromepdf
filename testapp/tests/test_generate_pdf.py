@@ -1,4 +1,3 @@
-import json
 import os
 import pathlib
 from io import BytesIO
@@ -12,13 +11,22 @@ from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
+from chromepdf import generate_pdf, generate_pdf_url
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.pdfconf import clean_pdf_kwargs
-from chromepdf.webdrivers import (download_chromedriver_version,
-                                  get_chrome_version)
+from chromepdf.webdrivers import download_chromedriver_version, get_chrome_version
 from testapp.tests.test_without_django import createTempFile
 from testapp.tests.utils import extractText, findChromePath
+
+
+# indicate whether selenium will account for missing chromedrivers or not
+# See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
+try:
+    from selenium.webdriver.common.selenium_manager import SeleniumManager  # pylint: disable=unused-import
+    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = True
+except Exception:
+    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = False
 
 
 class GeneratePdfSimpleTests(TestCase):
@@ -26,9 +34,6 @@ class GeneratePdfSimpleTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""
-
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = 'One Word'
         pdfbytes = generate_pdf(html)
@@ -74,9 +79,6 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chrome_path_success(self):
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = 'One Word'
         pdfbytes = generate_pdf(html, chrome_path=findChromePath())
         self.assertIsInstance(pdfbytes, bytes)
@@ -85,18 +87,12 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chrome_path_failure(self):
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = 'One Word'
         with self.assertRaises(ChromePdfException):
             _pdfbytes = generate_pdf(html, chrome_path=r"C:\Program Files (x86)\badpath.exe")
 
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chromedriver_path_success(self):
-
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         chromedriver_path = download_chromedriver_version(get_chrome_version(findChromePath()))
 
@@ -109,12 +105,16 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chromedriver_path_failure(self):
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = 'One Word'
-        with self.assertRaises(ChromePdfException):
-            _pdfbytes = generate_pdf(html, chromedriver_path=r"C:\Program Files (x86)\badpath.exe")
+
+        with self.assertRaises(Exception):
+            _pdfbytes = generate_pdf(html, chromedriver_path=__file__)  # a valid file path but not a chromedriver
+
+        if _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS:
+            pass
+        else:
+            with self.assertRaises(ChromePdfException):
+                _pdfbytes = generate_pdf(html, chromedriver_path=r"C:\Program Files (x86)\badpath.exe")
 
 
 class GeneratePdfUrlSimpleTests(TestCase):
@@ -122,9 +122,6 @@ class GeneratePdfUrlSimpleTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_url(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function."""
-
-        from chromepdf import \
-            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         html = "This is a test"
         extracted_text = ''
@@ -142,9 +139,6 @@ class GeneratePdfUrlSimpleTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_url_bad_file_uri(self):
         """Test outputting a PDF using the generate_pdf_url() shortcut function, with a bad file URI."""
-
-        from chromepdf import \
-            generate_pdf_url  # top-level, not via chromepdf.shortcuts
 
         with self.assertRaises(ValueError):
             _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
@@ -172,8 +166,6 @@ class GeneratePdfThreadTests(TestCase):
     @staticmethod
     def _gen_pdf(num):
         html = 'One Word'
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
         _pdfbytes = generate_pdf(html)
 
     def test_multiprocess(self):
@@ -215,9 +207,6 @@ class GeneratePdfEncodingTests(TestCase):
         One unicode character is tested.
         Also, the Javascript escape character for multi-line strings (due to us using it in document.write(`{}`))
         """
-
-        from chromepdf import (  # top-level, not via chromepdf.shortcuts
-            generate_pdf, generate_pdf_url)
 
         html = 'Unicode Char: \u0394 Javascript escape character: ` Some quotes: "\''
 
@@ -264,8 +253,6 @@ class PdfPageSizeTests(TestCase):
     def test_default_size(self):
         "Test the default size of generated PDF files."
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
         html = ''
         pdfbytes = generate_pdf(html)
 
@@ -275,9 +262,6 @@ class PdfPageSizeTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_default_size_landscape(self):
         "Test the default size of generated PDF files in landscape mode."
-
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'landscape': True})
@@ -289,9 +273,6 @@ class PdfPageSizeTests(TestCase):
     def test_paperformat_override(self):
         "Test the effect of a paperFormat override on the generated PDF file's size."
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = ''
         pdfbytes = generate_pdf(html, {'paperFormat': 'A4'})
         self.assertPageSizeInInches(pdfbytes, (8.26, 11.69))
@@ -300,9 +281,6 @@ class PdfPageSizeTests(TestCase):
     def test_paperformat_override_landscape(self):
         "Test the effect of a paperFormat override on the generated PDF file's size when in landscape mode."
 
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
-
         html = ''
         pdfbytes = generate_pdf(html, {'paperFormat': 'A4', 'landscape': True})
         self.assertPageSizeInInches(pdfbytes, (11.69, 8.26))
@@ -310,9 +288,6 @@ class PdfPageSizeTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_scale(self):
         "Scale should affect text size, NOT the paper size."
-
-        from chromepdf import \
-            generate_pdf  # top-level, not via chromepdf.shortcuts
 
         html = ''
         pdfbytes = generate_pdf(html, {'scale': 2})

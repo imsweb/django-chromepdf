@@ -16,6 +16,7 @@ from selenium.webdriver.chrome.service import Service
 
 from chromepdf.exceptions import ChromePdfException
 
+
 _IS_SELENIUM_3 = selenium.__version__.split('.')[0] == '3'
 
 
