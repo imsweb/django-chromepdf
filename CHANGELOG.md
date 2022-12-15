@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/imsweb/django-chromepdf/tree/1.5.0)
+
+**Added**
+
+- Added pyproject.toml file for setup install. Backwards compatibility is still provided via setup.py for Python environments with setuptools < 61 installed, in particular Python 3.6, which only supports setuptools<60 and therefore cannot use pyproject.toml. Support for Python 3.6 and Selenium 3 will end with the eventual release of ChromePDF 2.0.
 
 ## [1.4.0](https://github.com/imsweb/django-chromepdf/tree/1.4.0) - 2022-09-19
 

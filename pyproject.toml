@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-chromepdf"
+description = "A small Python 3 library that uses Selenium and Google Chrome to convert HTML into a PDF."
+readme = "README.md"
+requires-python = "~=3.6"
+license = {text = "BSD"}
+authors = [
+  {email = "kukwaa@imsweb.com"},
+  {name = "Andrew Kukwa"}
+]
+maintainers = [
+  {name = "Andrew Kukwa", email = "kukwaa@imsweb.com"}
+]
+classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: POSIX',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: OS Independent',
+        'Topic :: Utilities',
+        'Topic :: Software Development :: Libraries',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+]
+dependencies = [
+    'selenium<5,>=3',
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage ='https://github.com/imsweb/django-chromepdf'
+repository ='https://github.com/imsweb/django-chromepdf'
+changelog = 'https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md'
+
+[tool.setuptools.dynamic]
+version = {attr = "chromepdf.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["chromepdf*"]
+
+[tool.isort]
+line_length = 120
+combine_as_imports = true
+known_first_party = ["chromepdf","testapp"]
+indent="    "
+multi_line_output = 4
+sections = ["FUTURE","STDLIB","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
+default_section = "THIRDPARTY"
+lines_between_sections = 1
+lines_after_imports = 2
