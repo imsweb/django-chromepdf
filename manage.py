@@ -4,6 +4,7 @@ import platform
 import subprocess
 import sys
 
+
 if __name__ == "__main__":
 
     # enforce project-specific git hooks
@@ -23,9 +24,8 @@ if __name__ == "__main__":
         chrome_path = findChromePath()
         if chrome_path is None:
             raise EnvironmentError('You must have a chrome.exe on your PATH.')
-        from chromepdf.webdrivers import (download_chromedriver_version,
-                                          get_chrome_version)
-        version = get_chrome_version(chrome_path)
+        from chromepdf.webdrivers import download_chromedriver_version, get_chrome_version
+        version = get_chrome_version(chrome_path, as_tuple=False)
         path = download_chromedriver_version(version)
         if os.path.exists(chromedriver_filename):
             os.remove(chromedriver_filename)
@@ -47,13 +47,12 @@ if __name__ == "__main__":
         if chromedriver_path is None:
             raise EnvironmentError(f"You must have a '{chromedriver_filename}' on your PATH. Run manage.py getchromedriver to fetch one.")
 
-        chrome_version = get_chrome_version(chrome_path)
+        chrome_version = get_chrome_version(chrome_path, as_tuple=False)
         with subprocess.Popen([chromedriver_filename, '--version'], stdout=subprocess.PIPE) as p:
             chromedriver_version = p.communicate()[0].decode('utf8')
         # Output is, EG: b'ChromeDriver 95.0.4638.54 (d31a821ec901f68d0d34ccdbaea45b4c86ce543e-refs/branch-heads/4638@{#871})\r\n
         chromedriver_version = chromedriver_version.split()[1]  # 95.0.4638.54
-        chromedriver_version = [int(c) for c in chromedriver_version.split('.')]  # (95,0,4638,54)
-        if chrome_version[0] != chromedriver_version[0]:
+        if chrome_version.split('.')[0] != chromedriver_version.split('.')[0]:
             raise EnvironmentError(f'Your PATH chromedriver version does not match your default chrome version: Chrome={chrome_version[0]}, Chromedriver={chromedriver_version[0]} (located at "{chromedriver_path}"). Make sure these match before running your tests. Run "manage.py getchromedriver" to fetch one.')
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")

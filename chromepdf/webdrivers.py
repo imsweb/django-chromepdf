@@ -5,6 +5,7 @@ import os
 import platform
 import shutil
 import subprocess
+import warnings
 import zipfile
 from contextlib import contextmanager
 from subprocess import PIPE
@@ -20,9 +21,28 @@ from chromepdf.exceptions import ChromePdfException
 _IS_SELENIUM_3 = selenium.__version__.split('.')[0] == '3'
 
 
-def get_chrome_version(path):
+def _version_to_tuple(version):
     """
-    Return a 4-tuple containing the version number of the Chrome binary exe, EG for Chrome 85: (85,0,4183,121)
+    Shortcut function that converts version string to tuple, for allowing deprecated behavior.
+    In ChromePDF 2.0, this should no longer be needed. Tuple support will no longer exist.
+    """
+    return tuple(int(i) for i in version.split('.'))
+
+
+def _force_version_str(version):
+    """
+    Shortcut function that lets us accept tuple versions and force them into string versions.
+    In ChromePDF 2.0, this should no longer be needed. Tuple support will no longer exist.
+    """
+    if isinstance(version, tuple):
+        warnings.warn("Support for versions as tuples is now deprecated. Pass a string instead.", DeprecationWarning)
+        return '.'.join(str(i) for i in version)
+    return version
+
+
+def _get_chrome_version_str(path):
+    """
+    Return a string containing the version number of the Chrome binary exe, EG for Chrome 85: '85.0.4183.121'
     raise ChromePdfException otherwise (EG if path not found)
     """
 
@@ -42,8 +62,7 @@ def get_chrome_version(path):
             lines = [l.strip() for l in proc.stdout.decode('utf8').split('\n') if l.strip()]
             for l in lines:
                 if l[0].isdigit():
-                    version = l.split()[0]
-                    return tuple(int(i) for i in version.split('.'))
+                    return l.split()[0]
 
             # if no lines containing version numbers were output
             raise ChromePdfException(f'Could not determine version of Chrome located at: "{path}"')
@@ -51,12 +70,24 @@ def get_chrome_version(path):
         else:  # linux, mac can both just use "--version"
             proc = subprocess.run([path, '--version'], check=True, stdout=PIPE, stderr=PIPE)
             version_stdout = proc.stdout.decode('utf8').strip()  # returns, eg, "Google Chrome 85.0.4183.121"
-            version = [i for i in version_stdout.split() if i[0].isdigit()][0]
-            return tuple(int(i) for i in version.split('.'))
+            return [i for i in version_stdout.split() if i[0].isdigit()][0]
 
     except Exception as ex:
         # FileNotFoundError, CalledProcessError, IndexError, etc
         raise ChromePdfException(f'Could not determine version of Chrome located at: "{path}"') from ex
+
+
+def get_chrome_version(path, as_tuple=True):
+    """
+    Return a 4-tuple containing the version number of the Chrome binary exe, EG for Chrome 85: (85,0,4183,121)
+    raise ChromePdfException otherwise (EG if path not found)
+    """
+
+    version = _get_chrome_version_str(path)
+    if as_tuple:
+        warnings.warn("get_chrome_version() support for returning tuples is deprecated. Pass as_tuple=False instead. In ChromePDF 2.0, this function will return string values always.", DeprecationWarning)
+        return _version_to_tuple(version)
+    return version
 
 
 def _get_chromedriver_environment_path():
@@ -70,14 +101,13 @@ def _get_chromedriver_environment_path():
     return shutil.which(filename)
 
 
-def _get_chromedriver_download_path(major_version):
+def _get_chromedriver_download_path(version):
     """Return a path to put/find a chromedriver file, if ChromePDF should/did download it."""
 
-    assert isinstance(major_version, int)
-
+    version = _force_version_str(version)
     is_windows = (platform.system() == 'Windows')
     chromedrivers_dir = os.path.join(os.path.dirname(__file__), 'chromedrivers')
-    chromedriver_path = os.path.join(chromedrivers_dir, f'chromedriver_{major_version}')
+    chromedriver_path = os.path.join(chromedrivers_dir, f'chromedriver_{version}')
     if is_windows:  # windows requires an extension or it won't run.
         chromedriver_path += '.exe'
     else:  # linux, mac = no extension
@@ -88,12 +118,13 @@ def _get_chromedriver_download_path(major_version):
 def _fetch_chromedriver_version_for_chrome_version(version):
     """
     Fetch the chromedriver version needed for the given Chrome version by querying the official website.
+    Returns a version string such as "85.0.4183.87"
     """
 
-    assert isinstance(version, tuple) and all(isinstance(i, int) for i in version), f'{version} must be a 4-tuple of ints.'
+    version = _force_version_str(version)
 
     # Google's API for the latest release takes only the first 3 parts of the version
-    version_first3parts = '.'.join(str(i) for i in version[:3])  # EG, "85.0.4183"
+    version_first3parts = version.rsplit('.', maxsplit=1)[0]  # EG, "85.0.4183"
 
     # This url returns a 4-part version string of the latest compatible chromedriver for your Chrome version.
     # This might be DIFFERENT than the version of your Chrome executable.
@@ -148,16 +179,14 @@ def download_chromedriver_version(version, force=False):
     for download url api
 
     Arguments:
-    * version: A 4-int tuple version as returned by get_chrome_version(), such as: (85,0,4183,121)
+    * version: A versionstring as returned by get_chrome_version(), such as: '85.0.4183.121'
     * force: If True, will force a download, even if a driver for that version is already saved.
     """
 
-    assert isinstance(version, tuple) and all(isinstance(i, int) for i in version), f'{version} must be a 4-tuple of ints.'
-
-    version_major = version[0]
+    version = _force_version_str(version)
 
     # Return the existing path if it exists and we're not forcing a new download.
-    chromedriver_download_path = _get_chromedriver_download_path(version_major)
+    chromedriver_download_path = _get_chromedriver_download_path(version)
     if os.path.exists(chromedriver_download_path) and not force:
         return chromedriver_download_path
 

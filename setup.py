@@ -5,6 +5,35 @@ import setuptools
 from setuptools import find_packages, setup
 
 
+_GITHUB_MASTER_ROOT = 'https://github.com/imsweb/django-chromepdf/blob/master/'
+
+
+def get_version():
+    """Return the version string stored at chromepdf.__version__"""
+    with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py'), encoding='utf8') as fp:
+        return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)  # @UndefinedVariable
+
+
+def get_long_description():
+    """
+    Return a long description consisting of the readme's contents.
+    The contents are Markdown, so be sure to set the "long_description_content_type" accordingly.
+    Convert all relative urls into absolute ones so that they will display correctly on Pypi.
+    """
+    with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf8') as fp:
+        contents = fp.read()
+        # expand relative github urls to absolute. this will match EVERY url in the document.
+        contents = re.sub(r'\[(.+?)\]\((.+?)\)', r'[\1](%s\2)' % _GITHUB_MASTER_ROOT, contents)
+        # un-expand urls that were already absolute.
+        contents = contents.replace(f'{_GITHUB_MASTER_ROOT}https://', 'https://')
+        return contents
+
+
+def find_chromepdf_packages():
+    ""
+    return find_packages(exclude=['testapp', '*testapp*', 'testapp.*'])
+
+
 # setuptools 61.0.0 is the first to support pyproject.toml config file.
 # See: https://setuptools.pypa.io/en/latest/history.html#v61-0-0
 _PYPROJECT_TOML_SUPPORTED = int(setuptools.__version__.split('.')[0]) >= 61
@@ -19,30 +48,6 @@ else:
     # setuptools 61 does not support Python 3.6, but we still do, because we still support
     # Selenium 3. So we must provide this workaround.
     # Support for Python 3.6 and Selenium 3 will end with the release of ChromePDF 2.0.
-
-    _GITHUB_MASTER_ROOT = 'https://github.com/imsweb/django-chromepdf/blob/master/'
-
-    def get_version():
-        """Return the version string stored at chromepdf.__version__"""
-        with open(os.path.join(os.path.dirname(__file__), 'chromepdf', '__init__.py'), encoding='utf8') as fp:
-            return re.match(r".*__version__ = '(.*?)'", fp.read(), re.S).group(1)  # @UndefinedVariable
-
-    def get_long_description():
-        """
-        Return a long description consisting of the readme's contents.
-        The contents are Markdown, so be sure to set the "long_description_content_type" accordingly.
-        Convert all relative urls into absolute ones so that they will display correctly on Pypi.
-        """
-        with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf8') as fp:
-            contents = fp.read()
-            # expand relative github urls to absolute. this will match EVERY url in the document.
-            contents = re.sub(r'\[(.+?)\]\((.+?)\)', r'[\1](%s\2)' % _GITHUB_MASTER_ROOT, contents)
-            # un-expand urls that were already absolute.
-            contents = contents.replace(f'{_GITHUB_MASTER_ROOT}https://', 'https://')
-            return contents
-
-    def find_chromepdf_packages():
-        return find_packages(exclude=['testapp', '*testapp*', 'testapp.*'])
 
     setup_params = dict(
         name='django-chromepdf',

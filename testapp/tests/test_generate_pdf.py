@@ -94,7 +94,7 @@ class GeneratePdfPathTests(TestCase):
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_chromedriver_path_success(self):
 
-        chromedriver_path = download_chromedriver_version(get_chrome_version(findChromePath()))
+        chromedriver_path = download_chromedriver_version(get_chrome_version(findChromePath(), as_tuple=False))
 
         # no-sandbox needed to work on CI.
         html = 'One Word'

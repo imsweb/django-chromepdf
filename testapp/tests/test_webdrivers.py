@@ -12,9 +12,9 @@ from chromepdf.conf import parse_settings
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivers import (
-    _get_chrome_webdriver_kwargs, _get_chromedriver_download_path, _get_chromedriver_environment_path,
-    _get_chromedriver_zip_url, _get_chromesession_temp_dir, devtool_command, download_chromedriver_version,
-    get_chrome_version, get_chrome_webdriver)
+    _force_version_str, _get_chrome_webdriver_kwargs, _get_chromedriver_download_path,
+    _get_chromedriver_environment_path, _get_chromedriver_zip_url, _get_chromesession_temp_dir, _version_to_tuple,
+    devtool_command, download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
 from testapp.tests.utils import MockCompletedProcess, findChromePath
 
 
@@ -41,21 +41,37 @@ class LocalChromedriverTestCase(TestCase):
 
 class GetChromeVersionTests(TestCase):
 
+    def test_version_conversion(self):
+        """Test functions that convert versions between types."""
+
+        version_str = '85.12.45.143'
+        version_tpl = (85, 12, 45, 143)
+        self.assertEqual(version_tpl, _version_to_tuple(version_str))
+        self.assertEqual(version_str, _force_version_str(version_tpl))
+        self.assertEqual(version_str, _force_version_str(_version_to_tuple(version_str)))
+
     def test_get_chrome_version(self):
         """Work for current OS. Get it for real. No mocking."""
 
+        # TODO: in ChromePDF 2.0, get_chrome_version() will always return a string.
+        # And as_tuple will raise a warning if it's passed, regardless of value.
         path = findChromePath()
         output = get_chrome_version(path)
         self.assertIsInstance(output, tuple)
         self.assertEqual(4, len(output))
         self.assertTrue(isinstance(i, int) for i in output)
 
+        output2 = get_chrome_version(path, as_tuple=True)
+        self.assertEqual(output, output2)
+
+        output3 = get_chrome_version(path, as_tuple=False)
+        self.assertEqual('.'.join(str(i) for i in output), output3)
+
     def test_get_chrome_version_windows(self):
         """Mock the Windows method of getting the version."""
 
         path = findChromePath()
-        expected_output = (85, 12, 45, 143)
-        output_str = '.'.join(str(i) for i in expected_output)
+        expected_version = '85.12.45.143'
 
         with mock.patch('platform.system') as m1:
             m1.return_value = 'Windows'
@@ -66,15 +82,15 @@ class GetChromeVersionTests(TestCase):
                         stdout = f"""
         ProductVersion   FileVersion      FileName
         --------------   -----------      --------
-        {output_str}     {output_str}     {path}
+        {expected_version}     {expected_version}     {path}
         """
                     else:
                         stdout = ''
                     return MockCompletedProcess(stdout=stdout)
                 m2.side_effect = side_effect
 
-                output = get_chrome_version(path)
-                self.assertEqual(expected_output, output)
+                output = get_chrome_version(path, as_tuple=False)
+                self.assertEqual(expected_version, output)
 
     def test_get_chrome_version_windows_failure(self):
         """Test Windows version when it doesn't output an actual version."""
@@ -86,15 +102,14 @@ class GetChromeVersionTests(TestCase):
                 m2.return_value = MockCompletedProcess('')
 
                 with self.assertRaises(ChromePdfException):
-                    output = get_chrome_version(path)
+                    output = get_chrome_version(path, as_tuple=False)
 
     def test_get_chrome_version_linux_mac(self):
         """Mock the Linux/Mac method of getting the version."""
 
         path = findChromePath()
-        expected_output = (85, 12, 45, 143)
-        output_str = '.'.join(str(i) for i in expected_output)
-        output_str = f'Google Chrome {output_str}'  # chrome --version should output a string exactly like this.
+        expected_version = '85.12.45.143'
+        output_str = f'Google Chrome {expected_version}'  # chrome --version should output a string exactly like this.
 
         for system in ('Linux', 'Darwin'):
             with mock.patch('platform.system') as m1:
@@ -108,8 +123,8 @@ class GetChromeVersionTests(TestCase):
                         return MockCompletedProcess(stdout=stdout)
                     m2.side_effect = side_effect
 
-                    output = get_chrome_version(path)
-                    self.assertEqual(expected_output, output)
+                    output = get_chrome_version(path, as_tuple=False)
+                    self.assertEqual(expected_version, output)
 
     def test_get_chrome_version_linux_mac_failure(self):
         """Mock the Linux/Mac method of getting the version when it doesn't output an actual version."""
@@ -122,7 +137,7 @@ class GetChromeVersionTests(TestCase):
                     m2.return_value = MockCompletedProcess('')
 
                     with self.assertRaises(ChromePdfException):
-                        output = get_chrome_version(path)
+                        output = get_chrome_version(path, as_tuple=False)
 
 
 class GetChromedriverDownloadPathTests(LocalChromedriverTestCase):
@@ -130,22 +145,22 @@ class GetChromedriverDownloadPathTests(LocalChromedriverTestCase):
     def test_current_os(self):
         """Just call the function. Results will differ depending on OS."""
 
-        major_version = 25
-        path = _get_chromedriver_download_path(major_version)
+        version = '85.12.45.143'
+        path = _get_chromedriver_download_path(version)
 
         is_windows = (platform.system() == 'Windows')
         if is_windows:
-            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}.exe')
+            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{version}.exe')
         else:
-            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}')
+            expected_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{version}')
         self.assertTrue(expected_path, path)
 
     def test_mocked_oses(self):
         """Mock several OSes and make sure they return the right paths."""
 
-        major_version = 25
-        win_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}.exe')
-        lin_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{major_version}')
+        version = '85.12.45.143'
+        win_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{version}.exe')
+        lin_path = os.path.join(settings.BASE_DIR, 'chromepdf', 'chromedrivers', f'chromedriver_{version}')
         OS_TESTS = {
             'Windows': win_path,
             'Linux': lin_path,
@@ -155,7 +170,7 @@ class GetChromedriverDownloadPathTests(LocalChromedriverTestCase):
             with self.subTest(system=system):
                 with mock.patch('platform.system') as m1:
                     m1.return_value = system
-                    self.assertEqual(expected_path, _get_chromedriver_download_path(major_version))
+                    self.assertEqual(expected_path, _get_chromedriver_download_path(version))
 
 
 class GetChromedriverZipUrlTests(LocalChromedriverTestCase):
@@ -225,9 +240,8 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
         """
 
         chrome_path = findChromePath()
-        version = get_chrome_version(chrome_path)
-
-        driver_path = _get_chromedriver_download_path(version[0])
+        version = get_chrome_version(chrome_path, as_tuple=False)
+        driver_path = _get_chromedriver_download_path(version)
 
         # delete if it exists, so it will be detected and re-downloaded.
         if os.path.exists(driver_path):
@@ -275,7 +289,7 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
 
         bad_path = r'C:\bad_path.exe'
         chrome_path = findChromePath()
-        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path, as_tuple=False))
 
         # bad chrome path should throw exception
         with self.assertRaises(ChromePdfException):
@@ -308,7 +322,7 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
         """
 
         chrome_path = findChromePath()
-        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path, as_tuple=False))
 
         kwargs = {
             'chrome_path': chrome_path,
@@ -331,7 +345,7 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
         """Make sure bad parameters to devtool_command will raise ChromePdfException."""
 
         chrome_path = findChromePath()
-        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path))
+        chromedriver_path = download_chromedriver_version(get_chrome_version(chrome_path, as_tuple=False))
 
         with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=chromedriver_path) as driver:
             with self.assertRaises(ChromePdfException):

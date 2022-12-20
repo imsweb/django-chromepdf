@@ -1,6 +1,5 @@
 import os
 import pathlib
-import tempfile
 from unittest.case import TestCase
 
 from django.test.utils import tag
@@ -28,13 +27,18 @@ class GeneratePdfStressTests(TestCase):
         html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
 
         # generate_pdf_url
+        path = os.path.abspath('contents.html')
         try:
-            with tempfile.NamedTemporaryFile(delete=False) as temp:
-                temp.write(html.encode('utf8'))  # 10* 100*1000 = 1 MB
+            with open(path, 'wb') as f:
+                f.write(html.encode('utf8'))
 
-                tempfile_uri = pathlib.Path(temp.name).as_uri()
-                pdfbytes = generate_pdf_url(tempfile_uri)
-                extracted_text = extractText(pdfbytes).strip()
-                self.assertEqual(1000 * 100, extracted_text.count('123456789'))
+            tempfile_uri = pathlib.Path(path).as_uri()
+            pdfbytes = generate_pdf_url(tempfile_uri)
+            # with open('contents.pdf','wb') as f:
+            #     f.write(pdfbytes)
+            extracted_text = extractText(pdfbytes).strip()
+            # with open('contents.txt','w',encoding='utf8') as f:
+            #     f.write(f'Contents: {extracted_text}')
+            self.assertEqual(1000 * 100, extracted_text.count('123456789'))
         finally:
-            os.remove(temp.name)
+            os.remove(path)

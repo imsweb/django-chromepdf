@@ -27,7 +27,7 @@ class ChromePdfMaker:
 
         # download chromedriver if we have chrome, and downloads are enabled
         if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:
-            chrome_version = get_chrome_version(self._chrome_path)
+            chrome_version = get_chrome_version(self._chrome_path, as_tuple=False)
             self._chromedriver_path = download_chromedriver_version(chrome_version)
 
         self._webdriver_kwargs = {
