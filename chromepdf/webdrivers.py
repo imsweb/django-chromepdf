@@ -65,7 +65,7 @@ def _get_chrome_version_str(path):
                     return l.split()[0]
 
             # if no lines containing version numbers were output
-            raise ChromePdfException(f'Could not determine version of Chrome located at: "{path}"')
+            raise ChromePdfException(f'Could not determine version of Chrome executable located at: "{path}"')
 
         else:  # linux, mac can both just use "--version"
             proc = subprocess.run([path, '--version'], check=True, stdout=PIPE, stderr=PIPE)
@@ -74,12 +74,17 @@ def _get_chrome_version_str(path):
 
     except Exception as ex:
         # FileNotFoundError, CalledProcessError, IndexError, etc
-        raise ChromePdfException(f'Could not determine version of Chrome located at: "{path}"') from ex
+        if os.path.exists(path):
+            exception_msg = f'Could not determine version of Chrome located at: "{path}"'
+        else:
+            exception_msg = f'Tried to determine version of Chrome located at: "{path}", but no executable exists at that location.'
+        raise ChromePdfException(exception_msg) from ex
 
 
 def get_chrome_version(path, as_tuple=True):
     """
     Return a 4-tuple containing the version number of the Chrome binary exe, EG for Chrome 85: (85,0,4183,121)
+    Return a string instead if as_tuple=True is passed.
     raise ChromePdfException otherwise (EG if path not found)
     """
 

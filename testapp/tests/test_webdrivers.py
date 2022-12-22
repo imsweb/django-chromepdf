@@ -48,22 +48,28 @@ class GetChromeVersionTests(TestCase):
         version_tpl = (85, 12, 45, 143)
         self.assertEqual(version_tpl, _version_to_tuple(version_str))
         self.assertEqual(version_str, _force_version_str(version_tpl))
+        self.assertEqual(version_str, _force_version_str(version_str))
         self.assertEqual(version_str, _force_version_str(_version_to_tuple(version_str)))
 
     def test_get_chrome_version(self):
         """Work for current OS. Get it for real. No mocking."""
 
         # TODO: in ChromePDF 2.0, get_chrome_version() will always return a string.
-        # And as_tuple will raise a warning if it's passed, regardless of value.
+        # And as_tuple will raise a warning if it's passed, regardless of value,
+        # because we will eventually remove it as a parameter.
         path = findChromePath()
+
+        # default behavior still returns tuple
         output = get_chrome_version(path)
         self.assertIsInstance(output, tuple)
         self.assertEqual(4, len(output))
         self.assertTrue(isinstance(i, int) for i in output)
 
+        # explicitly return tuple
         output2 = get_chrome_version(path, as_tuple=True)
         self.assertEqual(output, output2)
 
+        # override and return a string instead
         output3 = get_chrome_version(path, as_tuple=False)
         self.assertEqual('.'.join(str(i) for i in output), output3)
 
@@ -101,8 +107,17 @@ class GetChromeVersionTests(TestCase):
             with mock.patch('subprocess.run') as m2:
                 m2.return_value = MockCompletedProcess('')
 
-                with self.assertRaises(ChromePdfException):
+                # test a valid path
+                with self.assertRaises(ChromePdfException) as cm:
                     output = get_chrome_version(path, as_tuple=False)
+                self.assertIn('Could not determine version of Chrome located at', str(cm.exception))
+
+                # test an invalid path
+                invalid_path = path + '.bad.extension'
+                with self.assertRaises(ChromePdfException) as cm:
+                    output = get_chrome_version(invalid_path, as_tuple=False)
+                self.assertIn('Tried to determine version of Chrome located at:', str(cm.exception))
+                self.assertIn('but no executable exists at that location.', str(cm.exception))
 
     def test_get_chrome_version_linux_mac(self):
         """Mock the Linux/Mac method of getting the version."""
