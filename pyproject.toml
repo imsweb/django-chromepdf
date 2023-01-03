@@ -9,11 +9,10 @@ readme = "README.md"
 requires-python = "~=3.6"
 license = {text = "BSD"}
 authors = [
-  {email = "kukwaa@imsweb.com"},
-  {name = "Andrew Kukwa"}
+    {name = "Andrew Kukwa", email = "kukwaa@imsweb.com"}
 ]
 maintainers = [
-  {name = "Andrew Kukwa", email = "kukwaa@imsweb.com"}
+    {name = "Andrew Kukwa", email = "kukwaa@imsweb.com"}
 ]
 classifiers = [
         'Development Status :: 5 - Production/Stable',
