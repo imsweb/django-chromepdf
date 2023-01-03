@@ -184,7 +184,7 @@ def download_chromedriver_version(version, force=False):
     for download url api
 
     Arguments:
-    * version: A versionstring as returned by get_chrome_version(), such as: '85.0.4183.121'
+    * version: A version string as returned by get_chrome_version(), such as: '85.0.4183.121'
     * force: If True, will force a download, even if a driver for that version is already saved.
     """
 

@@ -8,14 +8,14 @@ All notable changes to this project will be documented in this file.
 
 - Added pyproject.toml file for setup install. Backwards compatibility is still provided via setup.py for Python environments with setuptools<61 installed, in particular Python 3.6, which only supports setuptools<61 and therefore cannot use pyproject.toml. Support for Python 3.6 and Selenium 3 will end with the eventual release of ChromePDF 2.0.
 
-** Changed**
+**Changed**
 
 - Chromedrivers downloaded to `chromepdf/chromedrivers/` now contain the full Chrome version string, rather than just the major version. If a Chrome exe is updated to a new minor version but same major version, this will now trigger a separate chromedriver download when it would not have before, to account for the possibility that it requires an updated chromedriver.
 - If an exception occurs when trying to determine the Chrome version, the error message will now clearly state whether or not an executable actually exists at the path provided.
 - `chromepdf.webdrivers.get_chrome_version()` has a new parameter, `as_tuple=True`. Passing `False` will return the version as a string instead. Returning a tuple by default will continue to work as before, but is now deprecated. It is now called using `as_tuple=False` in all places in ChromePDF. In ChromePDF 2.0, this function will return a string by default.
 - `chromepdf.webdrivers` functionality that accepts Chrome versions as tuples has been deprecated. They can now accept either a tuple or string version, but tuples will raise a deprecation warning. In ChromePDF 2.0, these functions will only accept strings.
 
-** Fixed **
+**Fixed**
 
 - Fixed a unit test that was encountering issues due to use of NamedTemporaryFile, resulting in a PDF that was missing some contents.
 - Fixed some error messages from the command-line API which were displaying an incorrect command name.
