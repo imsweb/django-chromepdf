@@ -23,6 +23,7 @@ def findChromePath():
         # Windows
         'chrome.exe',  # CWD
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         # MacOS
         r"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         # Linux

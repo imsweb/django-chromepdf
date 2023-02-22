@@ -16,15 +16,19 @@ class ChromePdfPyPITests(TestCase):
         # setup file has correct version?
         from setup import _PYPROJECT_TOML_SUPPORTED, get_version, setup_params
 
+        # readme contents make sense?
+        readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'README.md')
+        with open(readme_path, 'r', encoding='utf8') as f:
+            readme_contents = f.read()
+        self.assertGreater(len(readme_contents), 1)
+
+        # readme file contains the command to install the latest version?
+        version_check = f'pip install django-chromepdf~={chromepdf_version}'
+        self.assertIn(version_check, readme_contents)
+
         if not _PYPROJECT_TOML_SUPPORTED:
             self.assertEqual(setup_params['version'], chromepdf_version)
             self.assertEqual(get_version(), chromepdf_version)
-
-            # readme contents make sense?
-            readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'README.md')
-            with open(readme_path, 'r', encoding='utf8') as f:
-                readme_contents = f.read()
-            self.assertGreater(len(readme_contents), 1)
 
             # setup has correct long description?
             from setup import _GITHUB_MASTER_ROOT, get_long_description
