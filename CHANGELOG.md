@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.0](https://github.com/imsweb/django-chromepdf/tree/1.5.0)
+## [1.5.0](https://github.com/imsweb/django-chromepdf/tree/1.5.0) - 2023-02-22
 
 **Added**
 
