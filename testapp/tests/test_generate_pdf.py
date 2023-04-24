@@ -1,5 +1,6 @@
 import os
 import pathlib
+import platform
 from io import BytesIO
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
@@ -24,9 +25,14 @@ from testapp.tests.utils import extractText, findChromePath
 # See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
 try:
     from selenium.webdriver.common.selenium_manager import SeleniumManager  # pylint: disable=unused-import
-    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = True
+    _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS = True
+
+    # the linux chromedriver manager is fixing exists-but-non-executble filepaths but windows is not.
+    # linux probably has an easier time checking if is-executable.
+    _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS = not (platform.system() == 'Windows')
 except Exception:
-    _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS = False
+    _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS = False
+    _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS = False
 
 
 class GeneratePdfSimpleTests(TestCase):
@@ -107,14 +113,20 @@ class GeneratePdfPathTests(TestCase):
 
         html = 'One Word'
 
-        with self.assertRaises(Exception):
-            _pdfbytes = generate_pdf(html, chromedriver_path=__file__)  # a valid file path but not a chromedriver
+        # a valid file path but not an executable
+        if _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS:
+            _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
+        else:
+            with self.assertRaises(OSError):
+                _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
 
-        if _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS:
-            pass
+        # bad file path
+        chromedriver_path = r"C:\Program Files (x86)\badpath.exe"
+        if _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS:
+            _pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
         else:
             with self.assertRaises(ChromePdfException):
-                _pdfbytes = generate_pdf(html, chromedriver_path=r"C:\Program Files (x86)\badpath.exe")
+                _pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
 
 
 class GeneratePdfUrlSimpleTests(TestCase):
