@@ -248,37 +248,47 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
     driver.quit()  # quits the entire driver (driver.close() only closes the current window)
 
 
-def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
-    """Return the kwargs needed to pass to webdriver.Chrome(), given the CHROMEPDF settings."""
+def _get_chrome_webdriver_args(**kwargs):
 
-    # at one point "-disable-gpu" was required for headless Chrome. Keep it here just in case.
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=737678
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
+    args = []
 
-    options.add_argument("--log-level=3")  # silence logging
+    args.append("--headless")
+    args.append("--disable-gpu")
+
+    args.append("--log-level=3")  # silence logging
 
     # disables the creation of the crash-dumps-dir.
     # will work even if --crash-dumps-dir is provided.
     # keep both as fallbacks. either is preferable to the global default.
-    options.add_argument('--disable-crash-reporter')
+    args.append('--disable-crash-reporter')
 
     # incognito mode lets us run chrome without creating and storing a user profile to disk.
     # this lets us generate PDFs in a thread- and process-safe way since they will not be
     # fighting over reading/writing the same files in the --user-data-dir
     # passing --incognito AND --user-data-dir= WILL cause the user-data-dir folder to be populated, so don't.
-    options.add_argument("--incognito")
+    args.append("--incognito")
 
     temp_dir = kwargs.get('_chromesession_temp_dir')
     if temp_dir is not None:
         crash_dumps_dir = os.path.join(temp_dir, 'crash-dumps-dir')
-        options.add_argument(f"--crash-dumps-dir={crash_dumps_dir}")
+        args.append(f"--crash-dumps-dir={crash_dumps_dir}")
 
     # add extra chrome args
     chrome_args = kwargs.get('chrome_args', [])
     for argv in chrome_args:
-        options.add_argument(argv)
+        args.append(argv)
+
+    return args
+
+
+def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
+    """Return the kwargs needed to pass to webdriver.Chrome(), given the CHROMEPDF settings."""
+
+    options = webdriver.ChromeOptions()
+
+    args = _get_chrome_webdriver_args(**kwargs)
+    for arg in args:
+        options.add_argument(arg)
 
     # silence the "DevTools started" message on windows
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2907#c3

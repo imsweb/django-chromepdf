@@ -52,7 +52,7 @@ class ChromePdfMaker:
         with get_chrome_webdriver(**self._webdriver_kwargs) as driver:
 
             # we could put the html here. but data urls in Chrome are limited to 2MB.
-            dataurl = "data:text/html;charset=utf-8," + urllib.parse.quote('')
+            dataurl = "data:text/html;charset=utf-8,"
             driver.get(dataurl)
 
             # append our html. theoretically no length limit.
