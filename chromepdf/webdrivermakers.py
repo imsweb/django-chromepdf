@@ -106,10 +106,11 @@ class NoSeleniumWebdriverMaker:
     "A wrapper around a direct connection to a chromedriver that can generate PDFs."
 
     def __init__(self, chrome_path, chromedriver_path, **kwargs):
-        if chromedriver_path is None:
-            chromedriver_path = _get_chromedriver_environment_path()
         self.chromedriver_path = chromedriver_path
         self.chrome_path = chrome_path or None
+
+        if not self.chrome_path and not self.chromedriver_path:
+            raise ChromePdfException('You must ideally provide a chrome_path, if chromedriver downloads are enabled. Or, less commonly, a chromedriver_path, if Chrome if on your PATH and your are certain that they are compatible.')
         self.chrome_args = _get_chrome_webdriver_args(**kwargs)
 
         # Get an available port
