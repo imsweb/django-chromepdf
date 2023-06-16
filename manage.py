@@ -19,21 +19,19 @@ if __name__ == "__main__":
     chromedriver_filename = 'chromedriver.exe' if is_windows else 'chromedriver'
 
     # Test generating a PDF without selenium
-    if 'noseleniumtest' in sys.argv:
+    if 'testnoselenium' in sys.argv:
         import pathlib
         myhtml = 'SPACE'
 
-        from chromepdf.pdfconf import get_default_pdf_kwargs
-        from chromepdf.webdrivercommands import get_chrome_noselenium_webdriver
-        pdf_kwargs = get_default_pdf_kwargs()
         # outbytes = generate_pdf_old(html=myhtml, pdf_kwargs=pdf_kwargs)
         path = pathlib.Path(__file__).parent
         chromedriver_path = path / 'chromedriver.exe'
         from testapp.tests.utils import findChromePath
         chrome_path = findChromePath()
 
-        with get_chrome_noselenium_webdriver(chrome_path, chromedriver_path) as driver:
-            outbytes = driver.generate_pdf(html=myhtml, pdf_kwargs=pdf_kwargs)
+        from chromepdf.shortcuts import generate_pdf
+
+        outbytes = generate_pdf(html=myhtml, chrome_path=chrome_path, chromedriver_path=chromedriver_path, use_selenium=False)
 
         #outbytes = generate_pdf(url='https://www.google.com', pdf_kwargs=params)
         with open('file.pdf', 'wb') as f:

@@ -4,6 +4,7 @@ DEFAULT_SETTINGS = {
     'CHROMEDRIVER_DOWNLOADS': True,
     # also, PDF_KWARGS, but it's handled differently
     'CHROME_ARGS': [],
+    'USE_SELENIUM': None,
 }
 
 

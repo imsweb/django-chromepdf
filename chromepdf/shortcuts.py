@@ -56,6 +56,4 @@ def generate_pdf_url(url, pdf_kwargs=None, **kwargs):
 
     """
 
-    warnings.warn("generate_pdf_url() is deprecated, use generate_pdf() instead.", DeprecationWarning)
-
     return ChromePdfMaker(**kwargs).generate_pdf_url(url, pdf_kwargs)

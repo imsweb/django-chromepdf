@@ -17,6 +17,7 @@ chromepdf/chromesession/users/*/
 *.bak 
 *.pdf
 *.pyc
+*.exe
 
 /uploads
 /tmp

@@ -33,6 +33,7 @@ def _get_parser():
     genpdf_parser.add_argument("--chrome-path", help="Path to Chrome executable")
     genpdf_parser.add_argument("--chromedriver-path", help="Path to Chrome executable")
     genpdf_parser.add_argument("--chromedriver-downloads", type=int, choices=(0, 1), help='1 or 0, to indicate whether to use Chromedriver downloads or not.')
+    genpdf_parser.add_argument("--use-selenium", type=int, choices=(0, 1, -1), help='1=yes, 2=no, -1=use Selenium if present, else do not.')
     genpdf_parser.add_argument("--chrome-args", help='A string of all arguments to pass to Chrome, separated by spaces.')
 
     return parser
@@ -67,6 +68,8 @@ def _command_generate_pdf(parser, namespace):
         kwargs['chromedriver_path'] = namespace.chromedriver_path
     if namespace.chromedriver_downloads is not None:
         kwargs['chromedriver_downloads'] = bool(namespace.chromedriver_downloads)
+    if namespace.use_selenium is not None:
+        kwargs['use_selenium'] = None if namespace.use_selenium == -1 else bool(namespace.use_selenium)
     if namespace.chrome_args is not None:
         kwargs['chrome_args'] = namespace.chrome_args.strip().split()
 

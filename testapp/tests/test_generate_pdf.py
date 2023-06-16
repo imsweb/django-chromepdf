@@ -72,11 +72,11 @@ class GeneratePdfSimpleTests(TestCase):
 
         html = 'One Word'
         pdfmaker = ChromePdfMaker()
-        with patch('chromepdf.maker.get_chrome_webdriver') as func:
+        with patch('chromepdf.maker.get_webdriver_maker') as func:
             with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
 
                 pdfmaker.generate_pdf(html)
-                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
+                func.assert_called_once_with(use_selenium=None, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfPathTests(TestCase):
@@ -160,11 +160,11 @@ class GeneratePdfUrlSimpleTests(TestCase):
         """Test to make sure the settings for chromedriver are ultimately passed to it when generating a PDF."""
 
         pdfmaker = ChromePdfMaker()
-        with patch('chromepdf.maker.get_chrome_webdriver') as func:
+        with patch('chromepdf.maker.get_webdriver_maker') as func:
             with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
 
                 pdfmaker.generate_pdf_url('file:///some/file')
-                func.assert_called_once_with(chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
+                func.assert_called_once_with(use_selenium=None, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfThreadTests(TestCase):

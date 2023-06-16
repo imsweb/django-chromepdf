@@ -14,7 +14,7 @@ class GeneratePdfStressTests(TestCase):
     def test_generate_pdf_huge_pdfs(self):
         """Test outputting PDFs when the HTML is 1 MB."""
 
-        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
+        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB / 10 = 1 MB
 
         # generate_pdf
         pdfbytes = generate_pdf(html)
@@ -24,7 +24,7 @@ class GeneratePdfStressTests(TestCase):
 
     def test_generate_pdf_url_huge_pdfs(self):
 
-        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB = 1 MB
+        html = '123456789 ' * ((1000 * 1000) // 10)  # 10 bytes * 1 MB / 10 = 1 MB
 
         # generate_pdf_url
         path = os.path.abspath('contents.html')

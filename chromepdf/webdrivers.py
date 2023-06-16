@@ -11,14 +11,7 @@ from contextlib import contextmanager
 from subprocess import PIPE
 from urllib import request as urllib_request
 
-import selenium
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-
 from chromepdf.exceptions import ChromePdfException
-
-
-_IS_SELENIUM_3 = selenium.__version__.split('.')[0] == '3'
 
 
 def _version_to_tuple(version):
@@ -229,11 +222,15 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
     # driver is automatically closed
     """
 
-    chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs)
+    warnings.warn("get_chrome_webdriver() is deprecated. Use get_webdriver_maker() instead.", DeprecationWarning)
 
     # contextmanager.__enter__
+
+    from selenium import webdriver
+    chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs)
     try:
         driver = webdriver.Chrome(**chrome_webdriver_kwargs)
+
     except Exception as ex:
         if chrome_path and not os.path.exists(chrome_path):
             raise ChromePdfException(f'Could not find a chrome_path path at: {chrome_path}') from ex
@@ -284,6 +281,11 @@ def _get_chrome_webdriver_args(**kwargs):
 def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
     """Return the kwargs needed to pass to webdriver.Chrome(), given the CHROMEPDF settings."""
 
+    import selenium
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    is_selenium_3 = selenium.__version__.split('.')[0] == '3'
+
     options = webdriver.ChromeOptions()
 
     args = _get_chrome_webdriver_args(**kwargs)
@@ -297,7 +299,6 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
     # In Selenium 4, we must tell the driver to ignore any os.environ['http_proxy'/'https_proxy'] values.
     # Calling this function preserves Selenium 3 behavior, which did not check them at all.
     # This function does not exist in Selenium 3, so we must check if it exists to preserve Selenium 3 compatibility.
-    # https://github.com/SeleniumHQ/selenium/issues/8768
     if hasattr(options, 'ignore_local_proxy_environment_variables') and callable(options.ignore_local_proxy_environment_variables):
         options.ignore_local_proxy_environment_variables()
 
@@ -306,7 +307,7 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
     chrome_kwargs = {'options': options}
     if chromedriver_path is not None:
-        if _IS_SELENIUM_3:
+        if is_selenium_3:
             chrome_kwargs['executable_path'] = chromedriver_path
         else:
             # executable_path is deprecated in Selenium 4.1.0 - start using Service() instead.
