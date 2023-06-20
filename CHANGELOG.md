@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.0]
+## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0)
 
 **Added**
 

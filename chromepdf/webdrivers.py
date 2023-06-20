@@ -33,6 +33,18 @@ def _force_version_str(version):
     return version
 
 
+_CHROME_PATHS = ('chrome', 'chrome.exe', 'Google Chrome')
+
+
+def find_chrome():
+    "Mimic Selenium's ability to find Google Chrome on PATH, for its default executable names for each OS."
+    for path in _CHROME_PATHS:
+        fullpath = shutil.which(path)
+        if fullpath is not None:
+            return fullpath
+    return None
+
+
 def _get_chrome_version_str(path):
     """
     Return a string containing the version number of the Chrome binary exe, EG for Chrome 85: '85.0.4183.121'
@@ -246,6 +258,10 @@ def get_chrome_webdriver(chrome_path, chromedriver_path, **kwargs):
 
 
 def _get_chrome_webdriver_args(**kwargs):
+    """
+    Return arguments to pass to Chrome when starting.
+    This function should not use Selenium, since it is also needed by the no-Selenium driver maker.
+    """
 
     args = []
 
@@ -318,7 +334,7 @@ def _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs):
 
 def devtool_command(driver, cmd, params=None):
     """
-    Send a command to Chrome via the web driver.
+    Send a command to Chrome via the Selenium web driver.
     Example:
         result = devtool_command(driver, "Page.printToPDF", pdf_kwargs)
     """

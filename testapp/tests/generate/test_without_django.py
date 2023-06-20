@@ -37,7 +37,7 @@ class TestWithoutDjangoTests(TestCase):
         This is a hack-y way of doing it. The other tests here should actually confirm PDFs can generate without Django.
         """
 
-        chromepdf_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'chromepdf'))
+        chromepdf_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'chromepdf'))
         self.assertTrue(os.path.isdir(chromepdf_dir))
 
         #total_files = 0

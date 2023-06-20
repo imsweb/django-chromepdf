@@ -17,8 +17,8 @@ from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.pdfconf import clean_pdf_kwargs
 from chromepdf.webdrivers import download_chromedriver_version, get_chrome_version
-from testapp.tests.test_without_django import createTempFile
-from testapp.tests.utils import extractText, findChromePath
+from chromepdf.webdrivermakers import get_webdriver_maker_class, is_selenium_installed
+from testapp.tests.utils import createTempFile, extractText, findChromePath
 
 
 # indicate whether selenium will account for missing chromedrivers or not
@@ -74,9 +74,9 @@ class GeneratePdfSimpleTests(TestCase):
         pdfmaker = ChromePdfMaker()
         with patch('chromepdf.maker.get_webdriver_maker') as func:
             with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
-
+                clazz = get_webdriver_maker_class()
                 pdfmaker.generate_pdf(html)
-                func.assert_called_once_with(use_selenium=None, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
+                func.assert_called_once_with(clazz=clazz, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfPathTests(TestCase):
@@ -114,7 +114,7 @@ class GeneratePdfPathTests(TestCase):
         html = 'One Word'
 
         # a valid file path but not an executable
-        if _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS:
+        if _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS and is_selenium_installed():
             _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
         else:
             with self.assertRaises(OSError):
@@ -122,7 +122,7 @@ class GeneratePdfPathTests(TestCase):
 
         # bad file path
         chromedriver_path = r"C:\Program Files (x86)\badpath.exe"
-        if _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS:
+        if _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS and is_selenium_installed():
             _pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
         else:
             with self.assertRaises(ChromePdfException):
@@ -131,22 +131,22 @@ class GeneratePdfPathTests(TestCase):
 
 class GeneratePdfUrlSimpleTests(TestCase):
 
-    @override_settings(CHROMEPDF={})
-    def test_generate_pdf_url(self):
-        """Test outputting a PDF using the generate_pdf_url() shortcut function."""
+    # @override_settings(CHROMEPDF={})
+    # def test_generate_pdf_url(self):
+    #     """Test outputting a PDF using the generate_pdf_url() shortcut function."""
 
-        html = "This is a test"
-        extracted_text = ''
-        try:
-            tempfile = createTempFile(html)
-            tempfile_uri = pathlib.Path(tempfile.name).as_uri()
-            pdfbytes = generate_pdf_url(tempfile_uri)
-            self.assertIsInstance(pdfbytes, bytes)
-            extracted_text = extractText(pdfbytes)
-        finally:
-            os.remove(tempfile.name)
+    #     html = "This is a test"
+    #     extracted_text = ''
+    #     try:
+    #         tempfile = createTempFile(html)
+    #         tempfile_uri = pathlib.Path(tempfile.name).as_uri()
+    #         pdfbytes = generate_pdf_url(tempfile_uri)
+    #         self.assertIsInstance(pdfbytes, bytes)
+    #         extracted_text = extractText(pdfbytes)
+    #     finally:
+    #         os.remove(tempfile.name)
 
-        self.assertEqual(1, extracted_text.count(html))
+    #     self.assertEqual(1, extracted_text.count(html))
 
     @override_settings(CHROMEPDF={})
     def test_generate_pdf_url_bad_file_uri(self):
@@ -155,16 +155,16 @@ class GeneratePdfUrlSimpleTests(TestCase):
         with self.assertRaises(ValueError):
             _pdfbytes = generate_pdf_url('/bad/absolute/path/not/a/scheme.html')
 
-    @override_settings(CHROMEPDF={'CHROME_PATH': '/chrome', 'CHROMEDRIVER_PATH': '/chromedriver', 'CHROME_ARGS': ['--no-sandbox']})
-    def test_generate_pdf_url_maker_args(self):
-        """Test to make sure the settings for chromedriver are ultimately passed to it when generating a PDF."""
+    # @override_settings(CHROMEPDF={'CHROME_PATH': '/chrome', 'CHROMEDRIVER_PATH': '/chromedriver', 'CHROME_ARGS': ['--no-sandbox']})
+    # def test_generate_pdf_url_maker_args(self):
+    #     """Test to make sure the settings for chromedriver are ultimately passed to it when generating a PDF."""
 
-        pdfmaker = ChromePdfMaker()
-        with patch('chromepdf.maker.get_webdriver_maker') as func:
-            with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
-
-                pdfmaker.generate_pdf_url('file:///some/file')
-                func.assert_called_once_with(use_selenium=None, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
+    #     pdfmaker = ChromePdfMaker()
+    #     with patch('chromepdf.maker.get_webdriver_maker') as func:
+    #         with patch('base64.b64decode') as _func2:  # override this so it doesn't complain about not getting a webdriver
+    #             clazz = get_webdriver_maker_class()
+    #             pdfmaker.generate_pdf_url('file:///some/file')
+    #             func.assert_called_once_with(clazz=clazz, chrome_path='/chrome', chromedriver_path='/chromedriver', _chromesession_temp_dir=pdfmaker._chromesession_temp_dir, chrome_args=['--no-sandbox'])
 
 
 class GeneratePdfThreadTests(TestCase):

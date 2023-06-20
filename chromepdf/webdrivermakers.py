@@ -13,25 +13,33 @@ from urllib.parse import urlparse
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.pdfconf import clean_pdf_kwargs
 from chromepdf.webdrivers import (
-    _get_chrome_webdriver_args, _get_chrome_webdriver_kwargs, _get_chromedriver_environment_path, devtool_command)
+    _get_chrome_webdriver_args, _get_chrome_webdriver_kwargs, devtool_command, download_chromedriver_version,
+    find_chrome, get_chrome_version)
+
+
+def is_selenium_installed():
+    try:
+        import selenium
+        return True
+    except (ImportError, ModuleNotFoundError):
+        return False
+
+
+def get_webdriver_maker_class(use_selenium=None):
+    if use_selenium is None:
+        use_selenium = is_selenium_installed()
+    return SeleniumWebdriverMaker if use_selenium else NoSeleniumWebdriverMaker
 
 
 @contextmanager
-def get_webdriver_maker(chrome_path, chromedriver_path, use_selenium, **kwargs):
+def get_webdriver_maker(chrome_path, chromedriver_path, clazz, **kwargs):
 
     # contextmanager.__enter__
+    wrapper = None
     try:
         # If None, then use Selenium if it exists. Otherwise, fall back on no-selenium
-        if use_selenium is None:
-            try:
-                import selenium
-                use_selenium = True
-            except (ImportError, ModuleNotFoundError):
-                use_selenium = False
-        if use_selenium:
-            wrapper = SeleniumWebdriverMaker(chrome_path, chromedriver_path, **kwargs)
-        else:
-            wrapper = NoSeleniumWebdriverMaker(chrome_path, chromedriver_path, **kwargs)
+        wrapper = clazz(chrome_path, chromedriver_path, **kwargs)
+        yield wrapper
 
     except Exception as ex:
         if chrome_path and not os.path.exists(chrome_path):
@@ -40,11 +48,15 @@ def get_webdriver_maker(chrome_path, chromedriver_path, use_selenium, **kwargs):
             raise ChromePdfException(f'Could not find a chromedriver_path at: {chromedriver_path}') from ex
         else:
             raise ex
+    else:
+        # cleanup that is done on success
+        pass
 
-    yield wrapper
-
-    # contextmanager.__exit__
-    wrapper.quit()  # quits the entire driver
+    finally:
+        # cleanup that is always done
+        # contextmanager.__exit__
+        if wrapper is not None:
+            wrapper.quit()  # quits the entire driver
 
 
 class SeleniumWebdriverMaker:
@@ -82,13 +94,6 @@ class SeleniumWebdriverMaker:
 
         pdf_kwargs = _clean_pdf_kwargs(pdf_kwargs)
 
-        # throw an early exception if we receive a string that Chrome would return a 400 error (Bad Request) if given.
-        parseresult = urlparse(url)
-        if not parseresult.scheme:
-            raise ValueError('generate_pdf_url() requires a valid URI, beginning with file:/// or https:// or similar. '
-                             'You can use: import pathlib; pathlib.Path(absolute_path).as_uri() to '
-                             'convert an absolute path into such a file URI.')
-
         self.driver.get(url)
 
         return self._get_pdf_bytes(pdf_kwargs)
@@ -106,11 +111,13 @@ class NoSeleniumWebdriverMaker:
     "A wrapper around a direct connection to a chromedriver that can generate PDFs."
 
     def __init__(self, chrome_path, chromedriver_path, **kwargs):
-        self.chromedriver_path = chromedriver_path
-        self.chrome_path = chrome_path or None
 
-        if not self.chrome_path and not self.chromedriver_path:
+        self.chromedriver_path = chromedriver_path
+        self.chrome_path = chrome_path
+
+        if self.chromedriver_path is None:
             raise ChromePdfException('You must ideally provide a chrome_path, if chromedriver downloads are enabled. Or, less commonly, a chromedriver_path, if Chrome if on your PATH and your are certain that they are compatible.')
+
         self.chrome_args = _get_chrome_webdriver_args(**kwargs)
 
         # Get an available port
@@ -118,32 +125,38 @@ class NoSeleniumWebdriverMaker:
         self.sock.bind(('', 0))
         self.port = self.sock.getsockname()[1]
 
-        # Start Chromedriver
-        args = [self.chromedriver_path, self.chrome_path, f'--port={self.port}']
-        args = [a for a in args if a is not None]  # skip chrome_path if it is None
-        is_windows = platform.system() == 'Windows'
-        if not is_windows:
-            # Linux needs these to be quoted in case of spaces in paths. Windows is okay though.
-            args = ' '.join(shlex.quote(str(s)) for s in args)
-
+        self.proc = None
         try:
-            self.proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-        except Exception as ex:
-            raise OSError(f'Failed to start chromedriver process: {args}') from ex
+            # Start Chromedriver
+            args = [self.chromedriver_path, self.chrome_path, f'--port={self.port}']
+            args = [a for a in args if a is not None]  # skip chrome_path if it is None
+            is_windows = platform.system() == 'Windows'
+            if not is_windows:
+                # Linux needs these to be quoted in case of spaces in paths. Windows is okay though.
+                args = ' '.join(shlex.quote(str(s)) for s in args)
 
-        # Start Chrome
-        driverurl = f'http://localhost:{self.port}/session'
-        data = {
-            "desiredCapabilities": {
-                "browser": "chrome",
-                "chromeOptions": {
-                    "args": self.chrome_args,
-                    'excludeSwitches': ['enable-logging'],  # Disables "DevTools listening" output
+            try:
+                self.proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+            except Exception as ex:
+                raise OSError(f'Failed to start chromedriver process: {args}') from ex
+
+            # Start Chrome
+            driverurl = f'http://localhost:{self.port}/session'
+            data = {
+                "desiredCapabilities": {
+                    "browser": "chrome",
+                    "chromeOptions": {
+                        "args": self.chrome_args,
+                        'excludeSwitches': ['enable-logging'],  # Disables "DevTools listening" output
+                    }
                 }
             }
-        }
-        output = get_chromedriver_response(driverurl, data)
-        self.session_id = output['sessionId']
+            output = get_chromedriver_response(driverurl, data)
+            self.session_id = output['sessionId']
+
+        except Exception as ex:
+            self.quit()
+            raise ex
 
     def _get_driver_command_url(self, suffix=None):
         suffix = f'/{suffix}' if suffix else ''
@@ -171,13 +184,6 @@ class NoSeleniumWebdriverMaker:
     def generate_pdf_url(self, url, pdf_kwargs):
         "Return the bytes of a PDF generated from a URL."
 
-        # throw an early exception if we receive a string that Chrome would return a 400 error (Bad Request) if given.
-        parseresult = urlparse(url)
-        if not parseresult.scheme:
-            raise ValueError('generate_pdf_url() requires a valid URI, beginning with file:/// or https:// or similar. '
-                             'You can use: import pathlib; pathlib.Path(absolute_path).as_uri() to '
-                             'convert an absolute path into such a file URI.')
-
         pdf_kwargs = _clean_pdf_kwargs(pdf_kwargs)
 
         # Go to data url that we will turn into the PDF
@@ -198,14 +204,16 @@ class NoSeleniumWebdriverMaker:
 
     def quit(self):
 
-        # Exit Chrome by terminating our session
-        driverurl = self._get_driver_command_url()
-        output = get_chromedriver_response(driverurl, method='DELETE')
+        if self.proc is not None:
 
-        # Send command to kill chromedriver process
-        # Then wait until it's killed, or current process may display ResourceError if it ends first.
-        self.proc.kill()
-        self.proc.wait()
+            # Exit Chrome by terminating our session
+            driverurl = self._get_driver_command_url()
+            output = get_chromedriver_response(driverurl, method='DELETE')
+
+            # Send command to kill chromedriver process
+            # Then wait until it's killed, or current process may display ResourceError if it ends first.
+            self.proc.kill()
+            self.proc.wait()
 
         # Unbind socket
         self.sock.close()
