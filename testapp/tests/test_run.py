@@ -109,7 +109,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_error_too_many_args(self):
         """Should display an error re: the number of arguments."""
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join(settings.TEMP_DIR, 'input.html')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
@@ -132,7 +132,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_inpath(self):
         """Generate a PDF where only the inpath is provided."""
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join(settings.TEMP_DIR, 'input.html.rev1.html')  # ensure outfile name only replaces final '.html'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
@@ -151,7 +151,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_inpath_no_ext(self):
         """Generate a PDF where only the inpath is provided and has no extension."""
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join(settings.TEMP_DIR, 'inputhtml')  # ensure outfile name only replaces final '.html'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
@@ -173,7 +173,7 @@ class CommandLineTests(TestCase):
         # Test doing it on a file that's already in the current working directory
         # This could impact the mkdirs() command, which would fail if run on a path like ''
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join('input.rev2.html')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
@@ -203,7 +203,7 @@ class CommandLineTests(TestCase):
         if os.path.exists(outpath):
             os.remove(outpath)
 
-        html = 'One Word'
+        html = 'Two Words'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
 
@@ -223,7 +223,7 @@ class CommandLineTests(TestCase):
         if os.path.exists(outpath):
             os.remove(outpath)
 
-        html = 'One Word'
+        html = 'Two Words'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         pdf_kwargs_json_path = os.path.join(settings.TEMP_DIR, 'pdf_kwargs.json')
@@ -245,7 +245,7 @@ class CommandLineTests(TestCase):
         if os.path.exists(outpath):
             os.remove(outpath)
 
-        html = 'One Word'
+        html = 'Two Words'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         pdf_kwargs = ['marginWrong']  # this is not a valid pdf_kwargs setting. PDF generation should fail.
@@ -268,7 +268,7 @@ class CommandLineTests(TestCase):
         if os.path.exists(outpath):
             os.remove(outpath)
 
-        html = 'One Word'
+        html = 'Two Words'
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)
         pdf_kwargs = {'marginWrong': '1in'}  # this is not a valid pdf_kwargs setting. PDF generation should fail.
@@ -285,7 +285,7 @@ class CommandLineTests(TestCase):
     def test_generate_pdf_inpath_outpath(self):
         """Generate a PDF where the inpath AND outpath are provided."""
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join(settings.TEMP_DIR, 'input.html')
         outpath = os.path.join(settings.TEMP_DIR, 'output.pdf')
         with open(inpath, 'w', encoding='utf8') as f:
@@ -307,7 +307,7 @@ class CommandLineTests(TestCase):
         Also make sure they all arguments arrive at generate_pdf() with the expected values.
         """
 
-        html = 'One Word'
+        html = 'Two Words'
         inpath = os.path.join(settings.TEMP_DIR, 'input.html')
         with open(inpath, 'w', encoding='utf8') as f:
             f.write(html)

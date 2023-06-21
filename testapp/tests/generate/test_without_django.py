@@ -76,7 +76,7 @@ class TestWithoutDjangoTests(TestCase):
     def test_generate_pdf_without_django(self):
         """Test outputting a PDF using the generate_pdf() shortcut function."""
 
-        html = 'One Word'
+        html = 'Two Words'
         pdfbytes = generate_pdf(html)
         self.assertIsInstance(pdfbytes, bytes)
 

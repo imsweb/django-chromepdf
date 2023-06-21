@@ -1,7 +1,9 @@
 import copy
+import io
 import os
 import platform
 import time
+from contextlib import redirect_stderr
 from unittest import mock
 from unittest.case import TestCase
 
@@ -11,10 +13,10 @@ from django.test.utils import override_settings
 from chromepdf.conf import parse_settings
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
+from chromepdf.webdrivers import *
 from chromepdf.webdrivers import (
     _force_version_str, _get_chrome_webdriver_kwargs, _get_chromedriver_download_path,
-    _get_chromedriver_environment_path, _get_chromedriver_zip_url, _get_chromesession_temp_dir, _version_to_tuple,
-    devtool_command, download_chromedriver_version, get_chrome_version, get_chrome_webdriver)
+    _get_chromedriver_environment_path, _get_chromedriver_zip_url, _get_chromesession_temp_dir, _version_to_tuple)
 from testapp.tests.utils import MockCompletedProcess, findChromePath
 
 
@@ -317,8 +319,9 @@ class ChromeDriverDownloadTests(LocalChromedriverTestCase):
         # See: https://www.selenium.dev/blog/2022/introducing-selenium-manager/
         if _SELENIUM_WILL_FIX_MISSING_CHROMEDRIVERS:
             # no exception for missing chromedriver path. selenium will fix it.
-            with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=bad_path):
-                pass
+            with redirect_stderr(io.StringIO()):  # mask stderr messge from selenium: "Trying with latest driver version"
+                with get_chrome_webdriver(chrome_path=chrome_path, chromedriver_path=bad_path):
+                    pass
         else:
             # assert an exception. selenium won't fix it.
             with self.assertRaises(ChromePdfException):

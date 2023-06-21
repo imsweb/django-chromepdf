@@ -5,7 +5,7 @@ from io import BytesIO
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 from unittest.case import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.test.utils import override_settings
 from pdfminer.pdfdocument import PDFDocument
@@ -18,7 +18,6 @@ from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.pdfconf import clean_pdf_kwargs
 from chromepdf.webdrivermakers import get_webdriver_maker, get_webdriver_maker_class, is_selenium_installed
-from chromepdf.webdrivers import download_chromedriver_version, get_chrome_version
 from testapp.tests.utils import createTempFile, extractText, findChromePath
 
 
@@ -259,7 +258,7 @@ class GeneratePdfThreadTests(TestCase):
 
     @staticmethod
     def _gen_pdf(num):
-        html = 'One Word'
+        html = 'Two Words'
         _pdfbytes = generate_pdf(html)
 
     def test_multiprocess(self):
