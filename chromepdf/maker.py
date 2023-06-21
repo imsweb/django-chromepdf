@@ -48,14 +48,13 @@ class ChromePdfMaker:
             'chrome_args': settings['chrome_args'],
             'chrome_path': self._chrome_path,
             'chromedriver_path': self._chromedriver_path,
-            'clazz': self._clazz,
             '_chromesession_temp_dir': self._chromesession_temp_dir,
         }
 
     def generate_pdf(self, html, pdf_kwargs=None):
         """Generate a PDF file from an html string and return the PDF as a bytes object."""
 
-        with get_webdriver_maker(**self._webdriver_kwargs) as wrapper:
+        with get_webdriver_maker(self._clazz, **self._webdriver_kwargs) as wrapper:
             return wrapper.generate_pdf(html, pdf_kwargs)
 
     def generate_pdf_url(self, url, pdf_kwargs=None):
@@ -68,5 +67,5 @@ class ChromePdfMaker:
                              'You can use: import pathlib; pathlib.Path(absolute_path).as_uri() to '
                              'convert an absolute path into such a file URI.')
 
-        with get_webdriver_maker(**self._webdriver_kwargs) as wrapper:
+        with get_webdriver_maker(self._clazz, **self._webdriver_kwargs) as wrapper:
             return wrapper.generate_pdf_url(url, pdf_kwargs)

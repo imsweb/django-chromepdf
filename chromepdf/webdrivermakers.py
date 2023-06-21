@@ -32,16 +32,18 @@ def get_webdriver_maker_class(use_selenium=None):
 
 
 @contextmanager
-def get_webdriver_maker(chrome_path, chromedriver_path, clazz, **kwargs):
+def get_webdriver_maker(clazz, **kwargs):
 
     # contextmanager.__enter__
     wrapper = None
     try:
         # If None, then use Selenium if it exists. Otherwise, fall back on no-selenium
-        wrapper = clazz(chrome_path, chromedriver_path, **kwargs)
+        wrapper = clazz(**kwargs)
         yield wrapper
 
     except Exception as ex:
+        chrome_path = kwargs.get('chrome_path')
+        chromedriver_path = kwargs.get('chromedriver_path')
         if chrome_path and not os.path.exists(chrome_path):
             raise ChromePdfException(f'Could not find a chrome_path path at: {chrome_path}') from ex
         elif chromedriver_path and not os.path.exists(chromedriver_path):
@@ -62,12 +64,12 @@ def get_webdriver_maker(chrome_path, chromedriver_path, clazz, **kwargs):
 class SeleniumWebdriverMaker:
     "A wrapper around a Selenium Chrome Webdriver that can generate PDFs."
 
-    def __init__(self, chrome_path, chromedriver_path, **kwargs):
-        self.chromedriver_path = chromedriver_path
-        self.chrome_path = chrome_path
+    def __init__(self, **kwargs):
+        self.chromedriver_path = kwargs.pop('chromedriver_path', None)
+        self.chrome_path = kwargs.pop('chrome_path', None)
         self.chrome_args = _get_chrome_webdriver_args(**kwargs)
 
-        chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(chrome_path, chromedriver_path, **kwargs)
+        chrome_webdriver_kwargs = _get_chrome_webdriver_kwargs(self.chrome_path, self.chromedriver_path, **kwargs)
         from selenium import webdriver
         self.driver = webdriver.Chrome(**chrome_webdriver_kwargs)
 
@@ -110,10 +112,9 @@ class SeleniumWebdriverMaker:
 class NoSeleniumWebdriverMaker:
     "A wrapper around a direct connection to a chromedriver that can generate PDFs."
 
-    def __init__(self, chrome_path, chromedriver_path, **kwargs):
-
-        self.chromedriver_path = chromedriver_path
-        self.chrome_path = chrome_path
+    def __init__(self, **kwargs):
+        self.chromedriver_path = kwargs.pop('chromedriver_path', None)
+        self.chrome_path = kwargs.pop('chrome_path', None)
 
         if self.chromedriver_path is None:
             raise ChromePdfException('You must ideally provide a chrome_path, if chromedriver downloads are enabled. Or, less commonly, a chromedriver_path, if Chrome if on your PATH and your are certain that they are compatible.')
