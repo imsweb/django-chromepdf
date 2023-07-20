@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0)
 
+**Fixed**
+
+- Support was added for the new Chromedriver endpoint that is being used for Chrome version 115 and later. See [documentation](https://github.com/GoogleChromeLabs/chrome-for-testing) and [announcement](https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE) for details.
+
 **Added**
 
 - Added experimental method of using ChromePDF to generate PDFs without using Selenium. Use `--no-deps` when installing ChromePDF to skip installing Selenium and all of its dependencies. ChromePDF will fallback to communicating with the chromedriver directly via HTTP requests. If you already have Selenium installed, you may also trigger this in one of three ways:

@@ -245,6 +245,7 @@ def download_chromedriver_version(version, force=False):
     zip_bytes = _fetch_chromedriver_zip_bytes(chromedriver_version)
 
     # Open the zip file, find the chromedriver, and save it to the specified path.
+    # Be advised: pre-115 zip files contain no subfolders, but 115+ contains one subfolder with the chromedriver.
     with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zf:
         for name in zf.namelist():
             if 'chromedriver' in name and not '.chromedriver' in name:  # get "chromedriver[.exe]" but not "LICENSE.chromedriver"

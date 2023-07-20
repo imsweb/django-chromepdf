@@ -58,13 +58,12 @@ if __name__ == "__main__":
     if 'test' in sys.argv:
         import shutil
 
-        from chromepdf.webdrivers import get_chrome_version
-        from testapp.tests.utils import findChromePath
+        from chromepdf.webdrivers import find_chrome, get_chrome_version
 
         chromedriver_path = shutil.which(chromedriver_filename)
-        chrome_path = findChromePath()
+        chrome_path = find_chrome()  # chrome must be on PATH for no-selenium tests.
         if chrome_path is None:
-            raise EnvironmentError('You must have a chrome.exe on your PATH.')
+            raise EnvironmentError('You must have a chrome/chrome.exe on your PATH.')
         if chromedriver_path is None:
             raise EnvironmentError(f"You must have a '{chromedriver_filename}' on your PATH. Run manage.py getchromedriver to fetch one.")
 
