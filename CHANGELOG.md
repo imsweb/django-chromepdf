@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0)
+## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0) - 2023-07-20
 
 **Fixed**
 
@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 **Added**
 
-- Added experimental method of using ChromePDF to generate PDFs without using Selenium. Use `--no-deps` when installing ChromePDF to skip installing Selenium and all of its dependencies. ChromePDF will fallback to communicating with the chromedriver directly via HTTP requests. If you already have Selenium installed, you may also trigger this in one of three ways:
+- Added experimental method of using ChromePDF to generate PDFs without using Selenium. ChromePDF will fall back to communicating with the chromedriver directly via HTTP requests. You may trigger this in one of three ways:
   - Pass `use_selenium=False` to `generate_pdf()`, or
   - Set `settings.CHROMEPDF['USE_SELENIUM'] = False` in your Django settings, or
   - Pass `--use-selenium=0` if calling via command-line option (`python -m chromepdf`)

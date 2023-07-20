@@ -133,48 +133,27 @@ def _fetch_chromedriver_version_for_chrome_version(version):
 
     version = _force_version_str(version)
 
-    version_major = int(version.split('.')[0])
-    if version_major >= 115:
-        # Starting with version 115, all chrome releases will get a "correspondingly-versioned" chromedriver release.
-        # https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE
-        return version
-
-    # Before version 115:
     # Google's API for the latest release takes only the first 3 parts of the version
     version_first3parts = version.rsplit('.', maxsplit=1)[0]  # EG, "85.0.4183"
 
-    # This url returns a 4-part version string of the latest compatible chromedriver for your Chrome version.
-    # This might be DIFFERENT than the version of your Chrome executable.
-    url = f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{version_first3parts}'
-    with urllib_request.urlopen(url) as f:
-        contents = f.read()
-    chromedriver_version = contents.decode('utf8')  # EG "85.0.4183.87"
-    return chromedriver_version
+    version_major = int(version.split('.')[0])
+    if version_major >= 115:
+        # Starting with version 115, use new endpoint
+        # https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE
+        url = 'https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build.json'
+        with urllib_request.urlopen(url) as f:
+            contents = json.loads(f.read().decode('utf8'))
+        chromedriver_version = contents['builds'][version_first3parts]['version']
 
-
-def _get_chromedriver_zip_url_v115_and_later(chromedriver_version):
-    """
-    Get the chromedriver zip url for chromedriver versions 115 and up.
-    """
-
-    is_windows = (platform.system() == 'Windows')
-    is_mac = (platform.system() == 'Darwin')
-    is_mac_m1 = (is_mac and platform.processor() == 'arm')
-
-    if is_windows:
-        os_plus_numbits = 'win32'
-    elif is_mac_m1:
-        os_plus_numbits = 'mac-arm64'
-    elif is_mac:
-        os_plus_numbits = 'mac-x64'
     else:
-        os_plus_numbits = 'linux64'
+        # This url returns a 4-part version string of the latest compatible chromedriver for your Chrome version.
+        # This might be DIFFERENT than the version of your Chrome executable.
+        url = f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{version_first3parts}'
+        with urllib_request.urlopen(url) as f:
+            contents = f.read()
+        chromedriver_version = contents.decode('utf8')  # EG "85.0.4183.87"
 
-    # Official code is using the following endpoint for all downloads:
-    # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/dc9fb4537e7f07352431c0fdf308825d2f77bc72/url-utils.mjs#L33
-    filename = f'chromedriver-{os_plus_numbits}.zip'
-    url = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_plus_numbits}/{filename}'
-    return url
+    return chromedriver_version
 
 
 def _get_chromedriver_zip_url(chromedriver_version):
@@ -205,6 +184,32 @@ def _get_chromedriver_zip_url(chromedriver_version):
     filename = f'chromedriver_{os_plus_numbits}.zip'
 
     return f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/{filename}'
+
+
+def _get_chromedriver_zip_url_v115_and_later(chromedriver_version):
+    """
+    Get the chromedriver zip url for chromedriver versions 115 and up.
+    """
+
+    is_windows = (platform.system() == 'Windows')
+    is_mac = (platform.system() == 'Darwin')
+    is_mac_m1 = (is_mac and platform.processor() == 'arm')
+
+    if is_windows:
+        os_plus_numbits = 'win32'
+    elif is_mac_m1:
+        os_plus_numbits = 'mac-arm64'
+    elif is_mac:
+        os_plus_numbits = 'mac-x64'
+    else:
+        os_plus_numbits = 'linux64'
+
+    # Official code is using the following endpoint for all downloads:
+    # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/dc9fb4537e7f07352431c0fdf308825d2f77bc72/url-utils.mjs#L33
+    filename = f'chromedriver-{os_plus_numbits}.zip'
+    url = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_plus_numbits}/{filename}'
+
+    return url
 
 
 def _fetch_chromedriver_zip_bytes(chromedriver_version):

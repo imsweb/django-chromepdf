@@ -3,6 +3,7 @@ Runs several other pdf-generation tests, but with the selenium package hidden so
 fallback to not using selenium.
 """
 
+import pkgutil
 from unittest import TestCase, mock
 
 import chromepdf
