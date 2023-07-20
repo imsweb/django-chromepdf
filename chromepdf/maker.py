@@ -21,11 +21,9 @@ class ChromePdfMaker:
         self._chromedriver_downloads = settings['chromedriver_downloads']
         self._chromesession_temp_dir = _get_chromesession_temp_dir()
 
-        self._use_selenium = settings['use_selenium']
-
         os.makedirs(self._chromesession_temp_dir, exist_ok=True)
 
-        self._clazz = get_webdriver_maker_class(self._use_selenium)
+        self._use_selenium = settings['use_selenium']
         if self._use_selenium is None:
             self._use_selenium = is_selenium_installed()
             if self._use_selenium:
@@ -38,6 +36,8 @@ class ChromePdfMaker:
                 # this only occurs if Selenium is not present.
                 if self._chrome_path is None:
                     self._chrome_path = find_chrome()
+
+        self._clazz = get_webdriver_maker_class(self._use_selenium)
 
         # download chromedriver if we have chrome, and downloads are enabled
         if self._chrome_path is not None and self._chromedriver_path is None and self._chromedriver_downloads:

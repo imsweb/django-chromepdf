@@ -133,6 +133,13 @@ def _fetch_chromedriver_version_for_chrome_version(version):
 
     version = _force_version_str(version)
 
+    version_major = int(version.split('.')[0])
+    if version_major >= 115:
+        # Starting with version 115, all chrome releases will get a "correspondingly-versioned" chromedriver release.
+        # https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE
+        return version
+
+    # Before version 115:
     # Google's API for the latest release takes only the first 3 parts of the version
     version_first3parts = version.rsplit('.', maxsplit=1)[0]  # EG, "85.0.4183"
 
@@ -145,12 +152,43 @@ def _fetch_chromedriver_version_for_chrome_version(version):
     return chromedriver_version
 
 
+def _get_chromedriver_zip_url_v115_and_later(chromedriver_version):
+    """
+    Get the chromedriver zip url for chromedriver versions 115 and up.
+    """
+
+    is_windows = (platform.system() == 'Windows')
+    is_mac = (platform.system() == 'Darwin')
+    is_mac_m1 = (is_mac and platform.processor() == 'arm')
+
+    if is_windows:
+        os_plus_numbits = 'win32'
+    elif is_mac_m1:
+        os_plus_numbits = 'mac-arm64'
+    elif is_mac:
+        os_plus_numbits = 'mac-x64'
+    else:
+        os_plus_numbits = 'linux64'
+
+    # Official code is using the following endpoint for all downloads:
+    # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/dc9fb4537e7f07352431c0fdf308825d2f77bc72/url-utils.mjs#L33
+    filename = f'chromedriver-{os_plus_numbits}.zip'
+    url = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_plus_numbits}/{filename}'
+    return url
+
+
 def _get_chromedriver_zip_url(chromedriver_version):
     """
-    Get the chromedriver zip download url for our particular OS+Processor.
+    Get the chromedriver zip download url for our particular OS+Processor for chrome versions 114 and earlier.
     The possible urls are taken from the chromedriver release files list, here:
     https://chromedriver.chromium.org/downloads
     """
+
+    version_major = int(chromedriver_version.split('.')[0])
+    if version_major >= 115:
+        # Starting with version 115, all chrome releases will get a "correspondingly-versioned" chromedriver release.
+        # https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE
+        return _get_chromedriver_zip_url_v115_and_later(chromedriver_version)
 
     is_windows = (platform.system() == 'Windows')
     is_mac = (platform.system() == 'Darwin')
@@ -209,7 +247,7 @@ def download_chromedriver_version(version, force=False):
     # Open the zip file, find the chromedriver, and save it to the specified path.
     with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zf:
         for name in zf.namelist():
-            if 'chromedriver' in name:
+            if 'chromedriver' in name and not '.chromedriver' in name:  # get "chromedriver[.exe]" but not "LICENSE.chromedriver"
                 with zf.open(name) as chromedriver_file:
                     with open(chromedriver_download_path, 'wb') as f:
                         f.write(chromedriver_file.read())

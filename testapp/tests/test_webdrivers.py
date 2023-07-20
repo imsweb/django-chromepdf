@@ -195,17 +195,39 @@ class GetChromedriverZipUrlTests(LocalChromedriverTestCase):
     def test_current_os(self):
         """Just call the function. Results will differ depending on OS."""
 
-        chromedriver_version = '85.5.6.114'
+        chromedriver_version = '115.0.5790.98'
         url = _get_chromedriver_zip_url(chromedriver_version)
 
-        prefix = f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/chromedriver_'
-        valid_os_types = ('win32', 'linux64', 'mac64', 'mac64_m1')
+        prefix = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/'
+        valid_os_types = ('win32', 'linux64', 'mac-x64', 'mac-arm64')
         suffix = '.zip'
         self.assertTrue(url.startswith(prefix))
-        self.assertTrue(url[len(prefix):-len(suffix)] in valid_os_types)
-        self.assertTrue(url.endswith('.zip'))
+        self.assertTrue(any(url[len(prefix):] == f'{o}/chromedriver-{o}.zip' for o in valid_os_types))
 
-    def test_mocked_oses(self):
+    def test_mocked_oses_115_and_later(self):
+        # 115 and later use new endpoint
+        # https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints
+
+        chromedriver_version = '115.0.5790.98'
+        # platform versions in:
+        # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/dc9fb4537e7f07352431c0fdf308825d2f77bc72/url-utils.mjs#L20
+        OS_TESTS = {
+            ('Windows', 'amdk6'): 'win32',
+            ('Linux', 'amdk6'): 'linux64',
+            ('Darwin', 'amdk6'): 'mac-x64',
+            ('Darwin', 'arm'): 'mac-arm64',
+        }
+        for system_processor, os_numbits in OS_TESTS.items():
+            expected_path = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_numbits}/chromedriver-{os_numbits}.zip'
+            system, processor = system_processor
+            with self.subTest(system=system, processor=processor):
+                with mock.patch('platform.system') as m1:
+                    m1.return_value = system
+                    with mock.patch('platform.processor') as m2:
+                        m2.return_value = processor
+                        self.assertEqual(expected_path, _get_chromedriver_zip_url(chromedriver_version))
+
+    def test_mocked_oses_114_and_earlier(self):
         """Mock several OSes and make sure they return the right paths."""
 
         chromedriver_version = '85.5.6.114'

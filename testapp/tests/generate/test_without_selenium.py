@@ -5,6 +5,7 @@ fallback to not using selenium.
 
 from unittest import TestCase, mock
 
+import chromepdf
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivermakers import *
 from testapp.tests.generate import test_generate_pdf
@@ -80,3 +81,8 @@ class SeleniumInstallationTests(TestCase):
             self.assertEqual(NoSeleniumWebdriverMaker, ChromePdfMaker(use_selenium=None)._clazz)
             self.assertEqual(NoSeleniumWebdriverMaker, ChromePdfMaker(use_selenium=False)._clazz)
             self.assertEqual(SeleniumWebdriverMaker, ChromePdfMaker(use_selenium=True)._clazz)
+
+    def test_no_selenium_imports(self):
+        "Ensure Selenium is never globally imported."
+
+        all_modules = list(pkgutil.walk_packages(chromepdf.__path__, prefix=chromepdf.__name__ + '.', onerror=lambda x: None))

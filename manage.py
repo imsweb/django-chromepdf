@@ -46,6 +46,7 @@ if __name__ == "__main__":
             raise EnvironmentError('You must have a chrome.exe on your PATH.')
         from chromepdf.webdrivers import download_chromedriver_version, get_chrome_version
         version = get_chrome_version(chrome_path, as_tuple=False)
+        print(f'Downloading chromedriver version {version}')
         path = download_chromedriver_version(version)
         if os.path.exists(chromedriver_filename):
             os.remove(chromedriver_filename)

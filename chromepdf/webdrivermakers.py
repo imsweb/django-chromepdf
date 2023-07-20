@@ -8,24 +8,25 @@ import subprocess
 import urllib
 import warnings
 from contextlib import contextmanager
-from urllib.parse import urlparse
 
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.pdfconf import clean_pdf_kwargs
-from chromepdf.webdrivers import (
-    _get_chrome_webdriver_args, _get_chrome_webdriver_kwargs, devtool_command, download_chromedriver_version,
-    find_chrome, get_chrome_version)
+from chromepdf.webdrivers import _get_chrome_webdriver_args, _get_chrome_webdriver_kwargs, devtool_command
 
 
 def is_selenium_installed():
     try:
         import selenium
         return True
-    except (ImportError, ModuleNotFoundError):
+    except ImportError:
         return False
 
 
 def get_webdriver_maker_class(use_selenium=None):
+    """
+    Return a class to use for generating the PDF files.
+    If input is None, then we will conditionally pick class depending on whether Selenium is installed.
+    """
     if use_selenium is None:
         use_selenium = is_selenium_installed()
     return SeleniumWebdriverMaker if use_selenium else NoSeleniumWebdriverMaker
@@ -33,11 +34,15 @@ def get_webdriver_maker_class(use_selenium=None):
 
 @contextmanager
 def get_webdriver_maker(clazz, **kwargs):
+    """
+    Context manager that boots up the chromedriver and Chrome for the duration of commands
+    that will generate PDF files, and then closes them when finished.
+    """
 
     # contextmanager.__enter__
     wrapper = None
     try:
-        # If None, then use Selenium if it exists. Otherwise, fall back on no-selenium
+        # Init whichever webdriver maker class we will be using.
         wrapper = clazz(**kwargs)
         yield wrapper
 
@@ -51,14 +56,15 @@ def get_webdriver_maker(clazz, **kwargs):
         else:
             raise ex
     else:
-        # cleanup that is done on success
+        # cleanup on succes
         pass
 
     finally:
-        # cleanup that is always done
+        # cleanup on success and also failure
         # contextmanager.__exit__
+        # if wrapper isn't None, then it means chrome+driver processes were started.
         if wrapper is not None:
-            wrapper.quit()  # quits the entire driver
+            wrapper.quit()  # ends chrome+driver processes and closes sockets.
 
 
 class SeleniumWebdriverMaker:
@@ -110,7 +116,7 @@ class SeleniumWebdriverMaker:
 
 
 class NoSeleniumWebdriverMaker:
-    "A wrapper around a direct connection to a chromedriver that can generate PDFs."
+    "A wrapper around a direct connection to a chromedriver that can generate PDFs, without using Selenium."
 
     def __init__(self, **kwargs):
         self.chromedriver_path = kwargs.pop('chromedriver_path', None)
@@ -137,6 +143,7 @@ class NoSeleniumWebdriverMaker:
                 args = ' '.join(shlex.quote(str(s)) for s in args)
 
             try:
+                # This process will be closed by calling self.quit()
                 self.proc = subprocess.Popen(args, stdout=subprocess.PIPE)
             except Exception as ex:
                 raise OSError(f'Failed to start chromedriver process: {args}') from ex
@@ -212,7 +219,7 @@ class NoSeleniumWebdriverMaker:
             output = get_chromedriver_response(driverurl, method='DELETE')
 
             # Send command to kill chromedriver process
-            # Then wait until it's killed, or current process may display ResourceError if it ends first.
+            # Then wait until it's killed, otherwise current process may display ResourceError if it ends first.
             self.proc.kill()
             self.proc.wait()
 
