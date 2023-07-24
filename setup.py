@@ -5,7 +5,7 @@ import setuptools
 from setuptools import find_packages, setup
 
 
-_GITHUB_MASTER_ROOT = 'https://github.com/imsweb/django-chromepdf/blob/master/'
+_GITHUB_MASTER_ROOT = 'https://github.com/imsweb/django-chromepdf/blob/main/'
 
 
 def get_version():
@@ -85,7 +85,7 @@ else:
         ],
         project_urls={
             "Source": "https://github.com/imsweb/django-chromepdf",
-            "Changelog": "https://github.com/imsweb/django-chromepdf/blob/master/CHANGELOG.md",
+            "Changelog": "https://github.com/imsweb/django-chromepdf/blob/main/CHANGELOG.md",
         },
     )
 

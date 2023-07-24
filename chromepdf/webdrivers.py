@@ -33,7 +33,7 @@ def _force_version_str(version):
     return version
 
 
-_CHROME_PATHS = ('chrome', 'chrome.exe', 'Google Chrome')
+_CHROME_PATHS = ('chrome', 'google-chrome', 'chrome.exe', 'Google Chrome')
 
 
 def find_chrome():
