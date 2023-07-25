@@ -140,7 +140,7 @@ class NoSeleniumWebdriverMaker:
             is_windows = platform.system() == 'Windows'
             if not is_windows:
                 # Linux needs these to be quoted in case of spaces in paths. Windows is okay though.
-                args = ' '.join(shlex.quote(str(s)) for s in args)
+                args = [shlex.quote(s) if not s.startswith('--') else s for s in args]
 
             try:
                 # This process will be closed by calling self.quit()
