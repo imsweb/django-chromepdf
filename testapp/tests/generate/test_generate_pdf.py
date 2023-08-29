@@ -233,7 +233,7 @@ class GeneratePdfPathTests(TestCase):
                 self.assertEqual(pdfbytes, expected_output)
                 func.assert_called_once_with(html, None)
         else:
-            with self.assertRaises(OSError):
+            with self.assertRaises(ChromePdfException):
                 _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
 
         # bad file path

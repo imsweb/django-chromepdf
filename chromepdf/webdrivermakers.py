@@ -54,7 +54,7 @@ def get_webdriver_maker(clazz, **kwargs):
         elif chromedriver_path and not os.path.exists(chromedriver_path):
             raise ChromePdfException(f'Could not find a chromedriver_path at: {chromedriver_path}') from ex
         else:
-            raise ex
+            raise ChromePdfException(str(ex)) from ex
     else:
         # cleanup on succes
         pass
