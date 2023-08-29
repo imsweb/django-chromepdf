@@ -227,14 +227,8 @@ class GeneratePdfPathTests(TestCase):
         gen_pdf_path = f'{clazz.__module__}.{clazz.__qualname__}.generate_pdf'
 
         # a valid file path but not an executable
-        if _SELENUIM_WILL_FIX_NONEXECUTABLE_CHROMEDRIVER_PATHS and is_selenium_installed():
-            with patch(gen_pdf_path, return_value=expected_output) as func:
-                pdfbytes = generate_pdf(html, chromedriver_path=__file__)
-                self.assertEqual(pdfbytes, expected_output)
-                func.assert_called_once_with(html, None)
-        else:
-            with self.assertRaises(ChromePdfException):
-                _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
+        with self.assertRaises(ChromePdfException):
+            _pdfbytes = generate_pdf(html, chromedriver_path=__file__)
 
         # bad file path
         chromedriver_path = r"C:\Program Files (x86)\badpath.exe"
