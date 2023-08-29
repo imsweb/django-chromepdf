@@ -238,14 +238,8 @@ class GeneratePdfPathTests(TestCase):
 
         # bad file path
         chromedriver_path = r"C:\Program Files (x86)\badpath.exe"
-        if _SELENUIM_WILL_FIX_NONEXISTING_CHROMEDRIVER_PATHS and is_selenium_installed():
-            with patch(gen_pdf_path, return_value=expected_output) as func:
-                pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
-                self.assertEqual(pdfbytes, expected_output)
-                func.assert_called_once_with(html, None)
-        else:
-            with self.assertRaises(ChromePdfException):
-                _pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
+        with self.assertRaises(ChromePdfException):
+            _pdfbytes = generate_pdf(html, chromedriver_path=chromedriver_path)
 
 
 class GeneratePdfThreadTests(TestCase):
