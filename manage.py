@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     is_windows = (platform.system() == 'Windows')
     chromedriver_filename = 'chromedriver.exe' if is_windows else 'chromedriver'
+    chromedriver_filename = os.path.abspath(chromedriver_filename)
 
     # Test generating a PDF without selenium
     if 'testnoselenium' in sys.argv:
@@ -51,6 +52,7 @@ if __name__ == "__main__":
         if os.path.exists(chromedriver_filename):
             os.remove(chromedriver_filename)
         os.rename(path, chromedriver_filename)
+        print(f'...saved to: {chromedriver_filename}')
         exit(0)
 
     # do some checks so environment tests will pass.

@@ -163,7 +163,6 @@ class NoSeleniumWebdriverMaker:
             self.session_id = output['sessionId']
 
         except Exception as ex:
-            self.quit()
             raise ex
 
     def _get_driver_command_url(self, suffix=None):

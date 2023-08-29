@@ -6,6 +6,8 @@ fallback to not using selenium.
 import pkgutil
 from unittest import TestCase, mock
 
+from django.test import tag
+
 import chromepdf
 from chromepdf.maker import ChromePdfMaker
 from chromepdf.webdrivermakers import *
@@ -18,35 +20,42 @@ hide_selenium_install = mock.patch.dict('sys.modules', {'selenium': None})
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_GeneratePdfSimpleTests(test_generate_pdf.GeneratePdfSimpleTests):
     pass
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_GeneratePdfPathTests(test_generate_pdf.GeneratePdfPathTests):
     pass
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_GeneratePdfUrlSimpleTests(test_generate_pdf.GeneratePdfUrlSimpleTests):
     pass
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_GeneratePdfThreadTests(test_generate_pdf.GeneratePdfThreadTests):
     pass
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_GeneratePdfEncodingTests(test_generate_pdf.GeneratePdfEncodingTests):
     pass
 
 
 @hide_selenium_install
+@tag("noselenium")
 class NS_PdfPageSizeTests(test_generate_pdf.PdfPageSizeTests):
     pass
 
 
+@tag("noselenium")
 class SeleniumInstallationTests(TestCase):
     """
     Tests behavior of several functions when selenium is, or isn't, installed.
