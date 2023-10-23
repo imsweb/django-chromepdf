@@ -30,7 +30,7 @@ The latest version can be installed via PyPI. This will also install Selenium, t
 
 You may view the [Changelog](CHANGELOG.md) for a list of all ChromePDF version changes. ChromePDF uses [semantic versioning](https://semver.org/) for its release numbering. You are encouraged to pin your requirements to a Major.Minor version in a manner that will also receive Bugfix updates like so:
 ```
-pip install django-chromepdf~=1.6.0
+pip install django-chromepdf~=1.7.0
 ```
 
 **2. Set the location of your Chrome executable.** This can be done in one of two ways:
