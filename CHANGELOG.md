@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/imsweb/django-chromepdf/tree/1.7.0) - 2023-10-23
+
+**Changed**
+
+- License changed from BSD 2-Clause License to BSD 3-Clause License.
+- Minor adjustments to experimental no-Selenium feature.
+
 ## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0) - 2023-07-20
 
 **Fixed**
