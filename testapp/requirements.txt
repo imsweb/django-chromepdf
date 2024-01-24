@@ -1,9 +1,9 @@
 # Used by chromepdf itself
 selenium<5,>=3
-Django~=3.2.9
+Django~=4.2.0
 
 # unit tests - measuring output page sizes and extracting text from pdf files
-pdfminer.six==20211012
+pdfminer.six==20221105 
 
 # For code cleanup
 autopep8==1.4.4

@@ -223,7 +223,7 @@ def _fetch_chromedriver_zip_bytes(chromedriver_version):
     return zip_bytes
 
 
-def download_chromedriver_version(version, force=False):
+def download_chromedriver_version(version, force=False, chmod=None):
     """
     Download a chromedriver executable for the Chrome version specified, if not already downloaded or force=True.
     Return the path of the existing (or newly downloaded) chromedriver executable.
@@ -237,6 +237,10 @@ def download_chromedriver_version(version, force=False):
     """
 
     version = _force_version_str(version)
+
+    # backwards compatibility.
+    if chmod is None:
+        chmod = 0o764
 
     # Return the existing path if it exists and we're not forcing a new download.
     chromedriver_download_path = _get_chromedriver_download_path(version)
@@ -257,7 +261,7 @@ def download_chromedriver_version(version, force=False):
                 with zf.open(name) as chromedriver_file:
                     with open(chromedriver_download_path, 'wb') as f:
                         f.write(chromedriver_file.read())
-                        os.chmod(chromedriver_download_path, 0o764)  # grant execute permission
+                        os.chmod(chromedriver_download_path, chmod)  # grant execute permission
                         return chromedriver_download_path
 
     raise ChromePdfException('Failed to download the chromedriver file.')

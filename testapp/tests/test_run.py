@@ -236,6 +236,15 @@ class CommandLineTests(TestCase):
         self.assertEqual(2, proc.returncode)
         self.assertFalse(os.path.exists(outpath))
 
+    def test_generate_pdf_error_bad_chromedriver_chmod(self):
+        """Should display an error if an unfamiliar subcommand is given"""
+
+        inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, '--chromedriver-chmod=777'])  # pylint: disable=subprocess-run-check
+        self.assertEqual(b'', proc.stdout)
+        self.assertIn('--chromedriver-chmod must be an octal value of the form: 0o---', proc.stderr.decode('utf8'))  # dispalys help text?
+        self.assertEqual(2, proc.returncode)
+
     def test_generate_pdfkwargs_json_not_dict(self):
         """Generate a PDF where --pdf-kwargs-json contains a non-dict json-encoded value."""
 
@@ -332,6 +341,7 @@ class CommandLineTests(TestCase):
             f'--chrome-path={chrome_path}',
             f'--chromedriver-path={chromedriver_path}',
             '--chromedriver-downloads=1',
+            '--chromedriver-chmod=0o777',
             f'--chrome-args={chrome_args}',  # should still work even with spaces
             f'--pdf-kwargs-json={pdf_kwargs_json_path}',
         ]
@@ -347,6 +357,7 @@ class CommandLineTests(TestCase):
             '--pdf-kwargs-json', pdf_kwargs_json_path,
             '--chrome-args', f'{chrome_args}',
             '--chromedriver-downloads', '1',
+            '--chromedriver-chmod', '0o777',
             '--chromedriver-path', chromedriver_path,
             '--chrome-path', chrome_path,
             inpath,
@@ -381,5 +392,6 @@ class CommandLineTests(TestCase):
                     chrome_path=chrome_path,
                     chromedriver_path=chromedriver_path,
                     chromedriver_downloads=True,
+                    chromedriver_chmod=0o777,
                     chrome_args=chrome_args_list,
                 )

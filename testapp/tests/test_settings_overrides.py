@@ -33,10 +33,11 @@ class TestParseSettings(SimpleTestCase):
 
         # compare to values of 'DEFAULT_SETTINGS'.
         # hardcode the values so tests will fail if defaults get changed by accident.
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output['chrome_path'], None)
         self.assertEqual(output['chromedriver_path'], None)
         self.assertEqual(output['chromedriver_downloads'], True)
+        self.assertEqual(output['chromedriver_chmod'], 0o764)
         self.assertEqual(output['chrome_args'], [])
         self.assertEqual(output['use_selenium'], None)
 
@@ -51,19 +52,22 @@ class TestParseSettings(SimpleTestCase):
         output = parse_settings(chrome_path=CHROME_PATH_KWARG_VAL,
                                 chromedriver_path=CHROMEDRIVER_PATH_KWARG_VAL,
                                 chromedriver_downloads=False,
+                                chromedriver_chmod=0o777,
                                 chrome_args=['--no-sandbox'],
                                 use_selenium=False)
 
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output.get('chrome_path'), CHROME_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_path'), CHROMEDRIVER_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chromedriver_chmod'), 0o777)
         self.assertEqual(output.get('use_selenium'), False)
         self.assertEqual(output.get('chrome_args'), ['--no-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_DOWNLOADS': False,
+                                  'CHROMEDRIVER_CHMOD': 0o777,
                                   'USE_SELENIUM': False,
                                   'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_overridden_settings(self):
@@ -71,16 +75,18 @@ class TestParseSettings(SimpleTestCase):
 
         output = parse_settings()
 
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output['chrome_path'], CHROME_PATH_SETTING_VAL)
         self.assertEqual(output['chromedriver_path'], CHROMEDRIVER_PATH_SETTING_VAL)
         self.assertEqual(output['chromedriver_downloads'], False)
+        self.assertEqual(output['chromedriver_chmod'], 0o777)
         self.assertEqual(output['use_selenium'], False)
         self.assertEqual(output['chrome_args'], ['--no-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_DOWNLOADS': True,
+                                  'CHROMEDRIVER_CHMOD': 0o666,
                                   'USE_SELENIUM': False,
                                   'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_kwargs_and_overridden_settings(self):
@@ -92,19 +98,22 @@ class TestParseSettings(SimpleTestCase):
         output = parse_settings(chromedriver_downloads=False,
                                 chrome_path=CHROME_PATH_KWARG_VAL,
                                 chromedriver_path=CHROMEDRIVER_PATH_KWARG_VAL,
+                                chromedriver_chmod=0o777,
                                 use_selenium=True,
                                 chrome_args=['yes-sandbox'])
 
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output.get('chrome_path'), CHROME_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_path'), CHROMEDRIVER_PATH_KWARG_VAL)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chromedriver_chmod'), 0o777)
         self.assertEqual(output.get('use_selenium'), True)
         self.assertEqual(output.get('chrome_args'), ['yes-sandbox'])
 
     @override_settings(CHROMEPDF={'CHROME_PATH': CHROME_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_PATH': CHROMEDRIVER_PATH_SETTING_VAL,
                                   'CHROMEDRIVER_DOWNLOADS': True,
+                                  'CHROMEDRIVER_CHMOD': 0o666,
                                   'USE_SELENIUM': True,
                                   'CHROME_ARGS': ['--no-sandbox']})
     def test_parse_settings_kwargs_and_overridden_settings_falsey(self):
@@ -115,13 +124,15 @@ class TestParseSettings(SimpleTestCase):
         output = parse_settings(chrome_path=None,
                                 chromedriver_path=None,
                                 chromedriver_downloads=False,
+                                chromedriver_chmod=0o000,
                                 use_selenium=False,
                                 chrome_args=[])
 
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output.get('chrome_path'), None)
         self.assertEqual(output.get('chromedriver_path'), None)
         self.assertEqual(output.get('chromedriver_downloads'), False)
+        self.assertEqual(output.get('chromedriver_chmod'), 0o000)
         self.assertEqual(output.get('use_selenium'), False)
         self.assertEqual(output.get('chrome_args'), [])
 
@@ -138,7 +149,7 @@ class TestParseSettings(SimpleTestCase):
                                 chrome_args=None)
 
         # parsed values should be converted to None instead of ''
-        self.assertEqual(5, len(output))
+        self.assertEqual(6, len(output))
         self.assertEqual(output['chrome_path'], None)
         self.assertEqual(output['chromedriver_path'], None)
         self.assertEqual(output['chromedriver_downloads'], False)

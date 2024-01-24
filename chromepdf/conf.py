@@ -2,6 +2,7 @@ DEFAULT_SETTINGS = {
     'CHROME_PATH': None,
     'CHROMEDRIVER_PATH': None,
     'CHROMEDRIVER_DOWNLOADS': True,
+    'CHROMEDRIVER_CHMOD': 0o764,
     # also, PDF_KWARGS, but it's handled differently
     'CHROME_ARGS': [],
     'USE_SELENIUM': None,
@@ -44,6 +45,8 @@ def parse_settings(**overrides):
         if k == 'CHROMEDRIVER_DOWNLOADS':  # boolean settings
             if output[k_lower] is None:
                 output[k_lower] = False
+        elif k == 'CHROMEDRIVER_CHMOD':
+            pass
         elif k == 'CHROME_ARGS':
             if output[k_lower] is None:
                 output[k_lower] = []

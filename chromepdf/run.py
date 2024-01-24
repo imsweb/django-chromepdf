@@ -32,6 +32,7 @@ def _get_parser():
     genpdf_parser.add_argument("--pdf-kwargs-json", help="Path to a JSON file whose contents can decode to a pdf_kwargs dict.")
     genpdf_parser.add_argument("--chrome-path", help="Path to Chrome executable")
     genpdf_parser.add_argument("--chromedriver-path", help="Path to Chrome executable")
+    genpdf_parser.add_argument("--chromedriver-chmod", help="Chmod permission to use for chromedrivers downloaded. This must be an octal value of the form: 0o---")
     genpdf_parser.add_argument("--chromedriver-downloads", type=int, choices=(0, 1), help='1 or 0, to indicate whether to use Chromedriver downloads or not.')
     genpdf_parser.add_argument("--use-selenium", type=int, choices=(0, 1, -1), help='1=yes, 0=no, -1=use Selenium if present, else do not.')
     genpdf_parser.add_argument("--chrome-args", help='A string of all arguments to pass to Chrome, separated by spaces.')
@@ -68,6 +69,10 @@ def _command_generate_pdf(parser, namespace):
         kwargs['chromedriver_path'] = namespace.chromedriver_path
     if namespace.chromedriver_downloads is not None:
         kwargs['chromedriver_downloads'] = bool(namespace.chromedriver_downloads)
+    if namespace.chromedriver_chmod is not None:
+        if not namespace.chromedriver_chmod.startswith('0o'):
+            parser.error('--chromedriver-chmod must be an octal value of the form: 0o---')
+        kwargs['chromedriver_chmod'] = int(namespace.chromedriver_chmod[2:], 8)
     if namespace.use_selenium is not None:
         kwargs['use_selenium'] = None if namespace.use_selenium == -1 else bool(namespace.use_selenium)
     if namespace.chrome_args is not None:
