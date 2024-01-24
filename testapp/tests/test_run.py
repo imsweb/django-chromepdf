@@ -240,6 +240,9 @@ class CommandLineTests(TestCase):
         """Should display an error if an unfamiliar subcommand is given"""
 
         inpath = os.path.join(settings.TEMP_DIR, 'input.rev1.html')
+        html = 'Two Words'
+        with open(inpath, 'w', encoding='utf8') as f:
+            f.write(html)
         proc = subprocess_run([PY_EXE, '-m', 'chromepdf', 'generate-pdf', inpath, '--chromedriver-chmod=777'])  # pylint: disable=subprocess-run-check
         self.assertEqual(b'', proc.stdout)
         self.assertIn('--chromedriver-chmod must be an octal value of the form: 0o---', proc.stderr.decode('utf8'))  # dispalys help text?
