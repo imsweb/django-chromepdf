@@ -198,7 +198,7 @@ class GetChromedriverZipUrlTests(LocalChromedriverTestCase):
         chromedriver_version = '115.0.5790.98'
         url = _get_chromedriver_zip_url(chromedriver_version)
 
-        prefix = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/'
+        prefix = f'https://storage.googleapis.com/chrome-for-testing-public/{chromedriver_version}/'
         valid_os_types = ('win32', 'linux64', 'mac-x64', 'mac-arm64')
         suffix = '.zip'
         self.assertTrue(url.startswith(prefix))
@@ -218,7 +218,7 @@ class GetChromedriverZipUrlTests(LocalChromedriverTestCase):
             ('Darwin', 'arm'): 'mac-arm64',
         }
         for system_processor, os_numbits in OS_TESTS.items():
-            expected_path = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_numbits}/chromedriver-{os_numbits}.zip'
+            expected_path = f'https://storage.googleapis.com/chrome-for-testing-public/{chromedriver_version}/{os_numbits}/chromedriver-{os_numbits}.zip'
             system, processor = system_processor
             with self.subTest(system=system, processor=processor):
                 with mock.patch('platform.system') as m1:

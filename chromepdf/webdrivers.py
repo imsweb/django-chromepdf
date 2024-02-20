@@ -169,6 +169,7 @@ def _get_chromedriver_zip_url(chromedriver_version):
         # https://groups.google.com/g/chromedriver-users/c/clpipqvOGjE
         return _get_chromedriver_zip_url_v115_and_later(chromedriver_version)
 
+    # The following is for version 114 and earlier only.
     is_windows = (platform.system() == 'Windows')
     is_mac = (platform.system() == 'Darwin')
     is_mac_m1 = (is_mac and platform.processor() == 'arm')
@@ -184,6 +185,33 @@ def _get_chromedriver_zip_url(chromedriver_version):
     filename = f'chromedriver_{os_plus_numbits}.zip'
 
     return f'https://chromedriver.storage.googleapis.com/{chromedriver_version}/{filename}'
+
+
+def _get_chromedriver_zip_url_prefix():
+    """
+    Return the url prefix currently in use for chromedrivers, according to official JSON endpoint.
+    This assumes that all chromedriver download versions will use similar urls.
+    This is an assumption, but it beats downloading a massive file with every single known
+    chromedriver version download ever made. IE, this:
+    https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json
+    """
+
+    # Official endpoint documented here:
+    # https://github.com/GoogleChromeLabs/chrome-for-testing?tab=readme-ov-file#json-api-endpoints
+    url = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
+    with urllib_request.urlopen(url) as f:
+        json_bytes = f.read()
+    d = json.loads(json_bytes.decode('utf8'))
+
+    # find latest version, get one of its urls, and strip the prefix from it.
+    chromedriver_version = d['channels']['Stable']['version']
+    url = d['channels']['Stable']['downloads']['chromedriver'][0]['url']
+
+    # Prefix is, EG (as of Feb 2024), but may change?
+    # "https://storage.googleapis.com/chrome-for-testing-public/"
+    idx = url.index(chromedriver_version)
+    prefix = url[:idx]
+    return prefix
 
 
 def _get_chromedriver_zip_url_v115_and_later(chromedriver_version):
@@ -206,8 +234,9 @@ def _get_chromedriver_zip_url_v115_and_later(chromedriver_version):
 
     # Official code is using the following endpoint for all downloads:
     # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/dc9fb4537e7f07352431c0fdf308825d2f77bc72/url-utils.mjs#L33
+    prefix = _get_chromedriver_zip_url_prefix()
     filename = f'chromedriver-{os_plus_numbits}.zip'
-    url = f'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/{chromedriver_version}/{os_plus_numbits}/{filename}'
+    url = f'{prefix}{chromedriver_version}/{os_plus_numbits}/{filename}'
 
     return url
 
