@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1](https://github.com/imsweb/django-chromepdf/tree/1.7.1) - 2024-02-20
+
+**Fixed**
+
+- The url path used by Chrome for serving chromedrivers has changed. ChromePDF has been updated to match. A helper function has been added that uses the official JSON endpoint to try and detect such changes in the future.
+
+## [1.7.0](https://github.com/imsweb/django-chromepdf/tree/1.7.0) - 2023-10-23
+
+**Changed**
+
+- License changed from BSD 2-Clause License to BSD 3-Clause License.
+- Minor adjustments to experimental no-Selenium feature.
+
 ## [1.6.0](https://github.com/imsweb/django-chromepdf/tree/1.6.0) - 2023-07-20
 
 **Fixed**
