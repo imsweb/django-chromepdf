@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.2](https://github.com/imsweb/django-chromepdf/tree/1.7.2) - 2024-05-01
+
+**Fixed**
+
+- A bug was fixed where HTML files containing certain characters could result in Chrome failing to render the PDF.
+
 ## [1.7.1](https://github.com/imsweb/django-chromepdf/tree/1.7.1) - 2024-02-20
 
 **Fixed**

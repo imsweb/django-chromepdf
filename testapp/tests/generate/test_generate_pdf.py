@@ -307,6 +307,61 @@ class GeneratePdfEncodingTests(TestCase):
             os.remove(tempfile.name)
         self.assertEqual(1, extracted_text.count(html))
 
+    @override_settings(CHROMEPDF={})
+    def test_generate_pdf_template_literals(self):
+        """
+        Test outputting a PDF with template literal expressions to ensure they are rendered as-is.
+        """
+
+        html = 'This raises error: ${a} but this renders as 1: ${1}'
+
+        # generate_pdf
+        pdfbytes = generate_pdf(html)
+        self.assertIsInstance(pdfbytes, bytes)
+        self.assertEqual(1, extractText(pdfbytes).count(html))
+
+        # generate_pdf_url
+        extracted_text = ''
+        try:
+            tempfile = createTempFile(html)
+            tempfile_uri = pathlib.Path(tempfile.name).as_uri()
+            pdfbytes = generate_pdf_url(tempfile_uri)
+            extracted_text = extractText(pdfbytes).strip()
+        finally:
+            os.remove(tempfile.name)
+        self.assertEqual(1, extracted_text.count(html))
+
+    @override_settings(CHROMEPDF={})
+    def test_generate_pdf_newlines(self):
+        """
+        Test generating a PDF that contains newlines. Make sure they are preserved.
+        """
+
+        html = """Line 1
+Line 2"""
+
+        # generate_pdf
+        pdfbytes = generate_pdf(html)
+        extracted_text = extractText(pdfbytes)
+        self.assertIn("Line 1", extracted_text)
+        self.assertIn("Line 2", extracted_text)
+        self.assertIn("Line 1 Line 2", extracted_text)  # PDF text extractor is inconsistent with newlines/space
+        self.assertNotIn("Line 1Line 2", extracted_text)
+
+        # generate_pdf_url
+        extracted_text = ''
+        try:
+            tempfile = createTempFile(html)
+            tempfile_uri = pathlib.Path(tempfile.name).as_uri()
+            pdfbytes = generate_pdf_url(tempfile_uri)
+            extracted_text = extractText(pdfbytes).strip()
+        finally:
+            os.remove(tempfile.name)
+        self.assertIn("Line 1", extracted_text)
+        self.assertIn("Line 2", extracted_text)
+        self.assertIn("Line 1\nLine 2", extracted_text)  # PDF text extractor is inconsistent with newlines/space
+        self.assertNotIn("Line 1Line 2", extracted_text)
+
 
 class PdfPageSizeTests(TestCase):
     """
