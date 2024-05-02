@@ -89,9 +89,10 @@ class SeleniumWebdriverMaker:
         self.driver.get(dataurl)
 
         # append our html. theoretically no length limit.
-        html = html.replace('`', r'\`')  # escape the backtick used to indicate a multiline string in javascript
+        html = html.replace('\'', '\\\'')  # We wrap the string in '', so escape all other '
+        html = html.replace('\n', ' \\\n')  # Allow newlines within '', and avoid concatenating words
         # we do NOT need to escape any other chars (quotes, etc), including unicode
-        self.driver.execute_script("document.write(`{}`)".format(html))
+        self.driver.execute_script("document.write('{}')".format(html))
 
         return self._get_pdf_bytes(pdf_kwargs)
 
@@ -181,8 +182,10 @@ class NoSeleniumWebdriverMaker:
 
         # Write the HTML for the PDF
         driverurl = self._get_driver_command_url('execute/sync')
-        html = html.replace('`', r'\`')
-        script = "document.write(`{}`)".format(html)
+
+        html = html.replace('\'', '\\\'')  # We wrap the string in '', so escape all other '
+        html = html.replace('\n', ' \\\n')  # Allow newlines within '', and avoid concatenating words
+        script = "document.write('{}')".format(html)
         data = {"script": script, 'args': []}
         output = get_chromedriver_response(driverurl, data)
 
