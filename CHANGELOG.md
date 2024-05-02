@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.7.2](https://github.com/imsweb/django-chromepdf/tree/1.7.2) - 2024-05-01
+## [1.7.3](https://github.com/imsweb/django-chromepdf/tree/1.7.3) - 2024-05-02
+
+**Fixed**
+
+- Fixed a regression in 1.7.2 where carriage returns (\r) were resulting in Chrome failing to render the PDF.
+
+## [1.7.2](https://github.com/imsweb/django-chromepdf/tree/1.7.2) - 2024-05-02
 
 **Fixed**
 
