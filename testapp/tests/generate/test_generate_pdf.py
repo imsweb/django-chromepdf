@@ -289,7 +289,7 @@ class GeneratePdfEncodingTests(TestCase):
         Also, the Javascript escape character for multi-line strings (due to us using it in document.write(`{}`))
         """
 
-        html = 'Unicode Char: \u0394 Javascript escape character: ` Some quotes: "\''
+        html = 'Unicode Char: \u0394 Javascript escape character: ` Some quotes: "\' Done'
 
         # generate_pdf
         pdfbytes = generate_pdf(html)
@@ -338,15 +338,14 @@ class GeneratePdfEncodingTests(TestCase):
         """
 
         html = """Line 1
-Line 2"""
+Line 2\r
+Line 3\r\nLine 4"""
 
         # generate_pdf
         pdfbytes = generate_pdf(html)
         extracted_text = extractText(pdfbytes)
-        self.assertIn("Line 1", extracted_text)
-        self.assertIn("Line 2", extracted_text)
-        self.assertIn("Line 1 Line 2", extracted_text)  # PDF text extractor is inconsistent with newlines/space
-        self.assertNotIn("Line 1Line 2", extracted_text)
+        self.assertIn("Line 1 Line 2 Line 3 Line 4", extracted_text)  # PDF text extractor is inconsistent with newlines/space
+        self.assertNotIn("Line 1Line 2Line 3Line 4", extracted_text)
 
         # generate_pdf_url
         extracted_text = ''
@@ -359,8 +358,9 @@ Line 2"""
             os.remove(tempfile.name)
         self.assertIn("Line 1", extracted_text)
         self.assertIn("Line 2", extracted_text)
-        self.assertIn("Line 1\nLine 2", extracted_text)  # PDF text extractor is inconsistent with newlines/space
-        self.assertNotIn("Line 1Line 2", extracted_text)
+        self.assertIn("Line 3", extracted_text)
+        self.assertIn("Line 1\nLine 2\nLine 3\nLine 4", extracted_text)  # PDF text extractor is inconsistent with newlines/space
+        self.assertNotIn("Line 1Line 2Line 3Line 4", extracted_text)
 
 
 class PdfPageSizeTests(TestCase):

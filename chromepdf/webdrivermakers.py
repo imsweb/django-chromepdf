@@ -91,6 +91,7 @@ class SeleniumWebdriverMaker:
         # append our html. theoretically no length limit.
         html = html.replace('\'', '\\\'')  # We wrap the string in '', so escape all other '
         html = html.replace('\n', ' \\\n')  # Allow newlines within '', and avoid concatenating words
+        html = html.replace('\r', ' \\\r')  # Allow newlines within '', and avoid concatenating words
         # we do NOT need to escape any other chars (quotes, etc), including unicode
         self.driver.execute_script("document.write('{}')".format(html))
 
@@ -185,6 +186,7 @@ class NoSeleniumWebdriverMaker:
 
         html = html.replace('\'', '\\\'')  # We wrap the string in '', so escape all other '
         html = html.replace('\n', ' \\\n')  # Allow newlines within '', and avoid concatenating words
+        html = html.replace('\r', ' \\\r')  # Allow newlines within '', and avoid concatenating words
         script = "document.write('{}')".format(html)
         data = {"script": script, 'args': []}
         output = get_chromedriver_response(driverurl, data)
