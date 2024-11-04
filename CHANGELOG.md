@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.4](https://github.com/imsweb/django-chromepdf/tree/1.7.4) - 2024-11-04
+
+**Fixed**
+
+- Fixed ChromePDF so it is now compatible with Selenium version 4.26 and up.
+
 ## [1.7.3](https://github.com/imsweb/django-chromepdf/tree/1.7.3) - 2024-05-02
 
 **Fixed**

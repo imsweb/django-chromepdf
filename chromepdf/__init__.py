@@ -1,4 +1,4 @@
-__version__ = '1.7.3'
+__version__ = '1.7.4'
 
 from chromepdf.exceptions import ChromePdfException
 from chromepdf.maker import ChromePdfMaker
