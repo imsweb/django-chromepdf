@@ -11,6 +11,8 @@ from contextlib import contextmanager
 from subprocess import PIPE
 from urllib import request as urllib_request
 
+from selenium.webdriver.remote.command import Command
+
 from chromepdf.exceptions import ChromePdfException
 
 
@@ -419,9 +421,17 @@ def devtool_command(driver, cmd, params=None):
     if params is None:
         params = {}
     resource = f"/session/{driver.session_id}/chromium/send_command_and_get_result"
-    url = driver.command_executor._url + resource
+
+    if hasattr(driver.command_executor, '_url'):
+        # old method, no longer works
+        url = driver.command_executor._url + resource
+    else:
+        # New method: Selenium 4.26+
+        url = f'{driver.command_executor._client_config.remote_server_addr}{resource}'
+
     body = json.dumps({'cmd': cmd, 'params': params})
     response = driver.command_executor._request('POST', url, body)
+
     if 'status' in response:
         # response dict only contains a "status" key if an error occurred.
         # when "status" is present, the "value" will contain the error message.
